@@ -4,9 +4,15 @@ class AppColors {
   // Core Theme
   static const Color background = Color(0xFF0E0E10);
   static const Color surface = Color(0xFF1A1C1E);
-  static const Color primary = Color(0xFF4CE3E6);
-  static const Color secondary = Color(0xFF51D5D7);
+  // Updated primary/secondary to richer teal tones to improve contrast and visual polish
+  static const Color primary = Color(0xFF00BFA6);
+  static const Color secondary = Color(0xFF00C4B4);
   static const Color error = Color(0xFFE74C3C);
+
+  // Useful semantic colors
+  static const Color onPrimary = Color(0xFF000000);
+  static const Color onSurface = Color(0xFFFFFFFF);
+  static const Color surfaceVariant = Color(0xFF222426);
 
   // Text
   static const Color textPrimary = Color(0xFFFFFFFF);
