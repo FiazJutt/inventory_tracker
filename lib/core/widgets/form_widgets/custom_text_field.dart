@@ -33,23 +33,25 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
           text: TextSpan(
             text: label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
             children: [
               if (required)
-                const TextSpan(
+                TextSpan(
                   text: ' *',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: colors.error,
                     fontSize: 14,
                   ),
                 ),
@@ -63,52 +65,52 @@ class CustomTextField extends StatelessWidget {
           keyboardType: keyboardType,
           enabled: enabled,
           onChanged: onChanged,
-          style: const TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: colors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
-              color: AppColors.textSecondary.withOpacity(0.5),
+              color: colors.textSecondary.withOpacity(0.5),
             ),
             filled: true,
-            fillColor: enabled ? AppColors.surface : AppColors.surface.withOpacity(0.5),
+            fillColor: enabled ? colors.surface : colors.surface.withOpacity(0.5),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
+              borderSide: BorderSide(
+                color: colors.primary,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Colors.red,
+              borderSide: BorderSide(
+                color: colors.error,
                 width: 1,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Colors.red,
+              borderSide: BorderSide(
+                color: colors.error,
                 width: 2,
               ),
             ),
             prefixIcon: Icon(
               icon,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               size: 20,
             ),
             prefixText: prefixText,
             suffixText: suffixText,
-            prefixStyle: const TextStyle(
-              color: AppColors.textPrimary,
+            prefixStyle: TextStyle(
+              color: colors.textPrimary,
               fontSize: 16,
             ),
-            suffixStyle: const TextStyle(
-              color: AppColors.textSecondary,
+            suffixStyle: TextStyle(
+              color: colors.textSecondary,
               fontSize: 14,
             ),
           ),

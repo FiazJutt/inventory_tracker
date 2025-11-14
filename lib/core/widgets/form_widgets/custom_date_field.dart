@@ -25,23 +25,25 @@ class CustomDateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
           text: TextSpan(
             text: label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
             children: [
               if (required)
-                const TextSpan(
+                TextSpan(
                   text: ' *',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: colors.error,
                     fontSize: 14,
                   ),
                 ),
@@ -55,17 +57,17 @@ class CustomDateField extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(12),
               border: validator != null && validator!(date) != null
-                  ? Border.all(color: Colors.red, width: 1)
+                  ? Border.all(color: colors.error, width: 1)
                   : null,
             ),
             child: Row(
               children: [
                 Icon(
                   icon,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -74,15 +76,15 @@ class CustomDateField extends StatelessWidget {
                     date != null ? _formatDate(date!) : 'Select date',
                     style: TextStyle(
                       color: date != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary.withOpacity(0.5),
+                          ? colors.textPrimary
+                          : colors.textSecondary.withOpacity(0.5),
                       fontSize: 16,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   size: 16,
                 ),
               ],
@@ -94,8 +96,8 @@ class CustomDateField extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16, top: 8),
             child: Text(
               validator!(date)!,
-              style: const TextStyle(
-                color: Colors.red,
+              style: TextStyle(
+                color: colors.error,
                 fontSize: 12,
               ),
             ),

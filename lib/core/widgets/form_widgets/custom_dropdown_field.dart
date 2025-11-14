@@ -32,23 +32,25 @@ class CustomDropdownField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
           text: TextSpan(
             text: label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
             children: [
               if (required)
-                const TextSpan(
+                TextSpan(
                   text: ' *',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: colors.error,
                     fontSize: 14,
                   ),
                 ),
@@ -59,14 +61,14 @@ class CustomDropdownField<T> extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
               Icon(
                 icon,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -77,18 +79,18 @@ class CustomDropdownField<T> extends StatelessWidget {
                     hint: Text(
                       hint,
                       style: TextStyle(
-                        color: AppColors.textSecondary.withOpacity(0.5),
+                        color: colors.textSecondary.withOpacity(0.5),
                       ),
                     ),
                     isExpanded: true,
-                    dropdownColor: AppColors.surface,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    dropdownColor: colors.surface,
+                    style: TextStyle(
+                      color: colors.textPrimary,
                       fontSize: 16,
                     ),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_drop_down,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                     items: items.map((T item) {
                       return DropdownMenuItem<T>(

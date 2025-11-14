@@ -73,13 +73,15 @@ class _CustomQuantityFieldState extends State<CustomQuantityField> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           widget.label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -90,15 +92,15 @@ class _CustomQuantityFieldState extends State<CustomQuantityField> {
             // Minus Button
             Container(
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: colors.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: colors.primary.withOpacity(0.3),
                   width: 1,
                 ),
               ),
               child: IconButton(
-                icon: const Icon(Icons.remove, color: AppColors.primary),
+                icon: Icon(Icons.remove, color: colors.primary),
                 onPressed: _decrement,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -111,10 +113,10 @@ class _CustomQuantityFieldState extends State<CustomQuantityField> {
                 margin: const EdgeInsets.symmetric(horizontal: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: colors.primary.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -122,15 +124,15 @@ class _CustomQuantityFieldState extends State<CustomQuantityField> {
                   controller: _controller, // Use controller instead of initialValue
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
                     hintText: widget.hint,
                     hintStyle: TextStyle(
-                      color: AppColors.textSecondary.withOpacity(0.5),
+                      color: colors.textSecondary.withOpacity(0.5),
                       fontSize: 16,
                     ),
                     border: InputBorder.none,
@@ -153,15 +155,15 @@ class _CustomQuantityFieldState extends State<CustomQuantityField> {
             // Plus Button
             Container(
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: colors.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: colors.primary.withOpacity(0.3),
                   width: 1,
                 ),
               ),
               child: IconButton(
-                icon: const Icon(Icons.add, color: AppColors.primary),
+                icon: Icon(Icons.add, color: colors.primary),
                 onPressed: _increment,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),

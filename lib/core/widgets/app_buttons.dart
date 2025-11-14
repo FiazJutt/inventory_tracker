@@ -37,19 +37,22 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final defaultTextColor = textColor ?? colors.onPrimary;
+    
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null)
-          Icon(icon, size: iconSize, color: textColor ?? Colors.black),
+          Icon(icon, size: iconSize, color: defaultTextColor),
         if (icon != null) const SizedBox(width: 8),
         Text(
           text,
           style: TextStyle(
             fontSize: fontSize,
             fontWeight: fontWeight,
-            color: textColor ?? Colors.black,
+            color: defaultTextColor,
           ),
         ),
       ],
@@ -59,7 +62,7 @@ class AppButton extends StatelessWidget {
       width: fullWidth ? double.infinity : width,
       height: height ?? 50,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.primary,
+        color: backgroundColor ?? colors.primary,
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: isElevated
             ? [

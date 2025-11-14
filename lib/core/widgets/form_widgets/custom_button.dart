@@ -27,29 +27,31 @@ class CustomButton extends StatelessWidget {
     this.padding,
   });
 
-  Color _getBackgroundColor() {
+  Color _getBackgroundColor(BuildContext context) {
+    final colors = context.appColors;
     switch (type) {
       case ButtonType.primary:
-        return AppColors.primary;
+        return colors.primary;
       case ButtonType.secondary:
-        return AppColors.surface;
+        return colors.surface;
       case ButtonType.outline:
         return Colors.transparent;
       case ButtonType.danger:
-        return Colors.red;
+        return colors.error;
       case ButtonType.success:
         return Colors.green;
     }
   }
 
-  Color _getTextColor() {
+  Color _getTextColor(BuildContext context) {
+    final colors = context.appColors;
     switch (type) {
       case ButtonType.primary:
-        return Colors.black;
+        return colors.onPrimary;
       case ButtonType.secondary:
-        return AppColors.textPrimary;
+        return colors.textPrimary;
       case ButtonType.outline:
-        return AppColors.primary;
+        return colors.primary;
       case ButtonType.danger:
         return Colors.white;
       case ButtonType.success:
@@ -57,10 +59,11 @@ class CustomButton extends StatelessWidget {
     }
   }
 
-  BorderSide? _getBorder() {
+  BorderSide? _getBorder(BuildContext context) {
+    final colors = context.appColors;
     if (type == ButtonType.outline) {
-      return const BorderSide(
-        color: AppColors.primary,
+      return BorderSide(
+        color: colors.primary,
         width: 2,
       );
     }
@@ -72,13 +75,13 @@ class CustomButton extends StatelessWidget {
     final button = ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: _getBackgroundColor(),
-        foregroundColor: _getTextColor(),
+        backgroundColor: _getBackgroundColor(context),
+        foregroundColor: _getTextColor(context),
         padding: padding ?? const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         minimumSize: Size(width ?? 0, height ?? 48),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
-          side: _getBorder() ?? BorderSide.none,
+          side: _getBorder(context) ?? BorderSide.none,
         ),
         elevation: type == ButtonType.outline ? 0 : 2,
       ),
@@ -88,7 +91,7 @@ class CustomButton extends StatelessWidget {
               width: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(_getTextColor()),
+                valueColor: AlwaysStoppedAnimation<Color>(_getTextColor(context)),
               ),
             )
           : Row(
@@ -104,7 +107,7 @@ class CustomButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: _getTextColor(),
+                    color: _getTextColor(context),
                   ),
                 ),
               ],

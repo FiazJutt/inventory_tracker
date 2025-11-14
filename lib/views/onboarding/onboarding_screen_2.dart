@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
-import 'package:inventory_tracker/views/home/.fgot/home.dart';
-import 'package:inventory_tracker/views/home/mian_screen.dart';
+import 'package:inventory_tracker/views/mian_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
+import 'widgets/onboarding_header.dart';
+import 'widgets/location_badge.dart';
+import 'widgets/suggestion_chip.dart';
+import 'widgets/room_counter_card.dart';
 
 class OnboardingScreen2 extends StatefulWidget {
   final String locationName;
-  
+
   const OnboardingScreen2({
     super.key,
     required this.locationName,
@@ -70,25 +73,23 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
       return;
     }
 
-    final inventoryProvider = Provider.of<InventoryProvider>(context, listen: false);
-    
-    // Add all rooms to the provider
+    final inventoryProvider =
+        Provider.of<InventoryProvider>(context, listen: false);
+
     addedRooms.forEach((roomName, count) {
       for (int i = 0; i < count; i++) {
-        // If count > 1, append number to room name
         final finalRoomName = count > 1 ? '$roomName ${i + 1}' : roomName;
-        
+
         final room = Room(
-          id: DateTime.now().millisecondsSinceEpoch.toString() + i.toString(),
+          id: '${DateTime.now().millisecondsSinceEpoch}_$i',
           name: finalRoomName,
           location: widget.locationName,
         );
-        
+
         inventoryProvider.addRoom(room);
       }
     });
 
-    // Navigate to home screen
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -99,14 +100,16 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -122,58 +125,13 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Add Rooms 🏡",
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      OnboardingHeader(
+                        title: "Add Rooms 🏡",
+                        subtitle:
+                            "Add rooms where your items belong. You can create your own or choose from suggestions.",
                       ),
-                      const SizedBox(height: 8),
-
-                      Text(
-                        "Add rooms where your items belong. You can create your own or choose from suggestions.",
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 15,
-                          height: 1.4,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.location_on,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.locationName,
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
+                      const SizedBox(height: 16),
+                      LocationBadge(location: widget.locationName),
                       const SizedBox(height: 32),
                       Row(
                         children: [
@@ -183,12 +141,10 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
                               decoration: InputDecoration(
                                 hintText: 'Custom Room Name',
                                 hintStyle: TextStyle(
-                                  color: AppColors.textSecondary.withOpacity(
-                                    0.6,
-                                  ),
+                                  color: colors.textSecondary.withOpacity(0.6),
                                 ),
                                 filled: true,
-                                fillColor: AppColors.surface,
+                                fillColor: colors.surface,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 18,
                                   vertical: 14,
@@ -213,134 +169,65 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: colors.primary,
+                              foregroundColor: colors.onPrimary,
                               padding: const EdgeInsets.all(14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
                             ),
-                            child: const Icon(Icons.add, color: Colors.black),
+                            child: const Icon(Icons.add),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
-
                       if (addedRooms.isEmpty)
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: colors.surface,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Text(
+                          child: Text(
                             'No rooms added yet. Tap suggestions below to add.',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(color: colors.textSecondary),
                           ),
                         )
                       else
-                        Column(
-                          children: addedRooms.entries.map((entry) {
-                            final roomName = entry.key;
-                            final count = entry.value;
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.12),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    roomName,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            final current =
-                                                addedRooms[roomName] ?? 1;
-                                            if (current > 1) {
-                                              addedRooms[roomName] =
-                                                  current - 1;
-                                            } else {
-                                              addedRooms.remove(roomName);
-                                            }
-                                          });
-                                        },
-                                        icon: const Icon(
-                                          Icons.remove_circle_outline,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      Text(
-                                        '$count',
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            addedRooms[roomName] =
-                                                (addedRooms[roomName] ?? 0) + 1;
-                                          });
-                                        },
-                                        icon: const Icon(
-                                          Icons.add_circle_outline,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                        ...addedRooms.entries.map((entry) {
+                          return RoomCounterCard(
+                            roomName: entry.key,
+                            count: entry.value,
+                            onDecrement: () {
+                              setState(() {
+                                final current = addedRooms[entry.key] ?? 1;
+                                if (current > 1) {
+                                  addedRooms[entry.key] = current - 1;
+                                } else {
+                                  addedRooms.remove(entry.key);
+                                }
+                              });
+                            },
+                            onIncrement: () {
+                              setState(() {
+                                addedRooms[entry.key] =
+                                    (addedRooms[entry.key] ?? 0) + 1;
+                              });
+                            },
+                          );
+                        }),
                       const SizedBox(height: 32),
-
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         alignment: WrapAlignment.start,
                         children: roomSuggestions.map((suggestion) {
-                          final isSelected = addedRooms.containsKey(suggestion);
-                          return ChoiceChip(
-                            label: Text(suggestion),
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color.fromRGBO(0, 191, 166, 1),
-                            ),
-                            selectedColor: AppColors.primary,
-                            backgroundColor: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.primary.withOpacity(0.25),
-                              ),
-                            ),
-                            selected: isSelected,
-                            onSelected: (_) {
+                          return SuggestionChip(
+                            label: suggestion,
+                            isSelected: addedRooms.containsKey(suggestion),
+                            onTap: () {
                               setState(() {
-                                if (isSelected) {
+                                if (addedRooms.containsKey(suggestion)) {
                                   addedRooms.remove(suggestion);
                                 } else {
                                   addedRooms[suggestion] = 1;
@@ -355,25 +242,21 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
                   ),
                 ),
               ),
-
-              // Fixed button at bottom
-              Padding(
-                padding: const EdgeInsets.symmetric(),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    label: const Text(
-                      'Create',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
-                    onPressed: _saveRoomsAndNavigate,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  label: const Text(
+                    'Create',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: _saveRoomsAndNavigate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                 ),

@@ -13,12 +13,14 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    
     return Row(
       children: [
         if (icon != null) ...[
           Icon(
             icon,
-            color: AppColors.primary,
+            color: colors.primary,
             size: 20,
           ),
           const SizedBox(width: 8),
@@ -27,7 +29,7 @@ class SectionHeader extends StatelessWidget {
             width: 4,
             height: 20,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              color: colors.primary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -35,8 +37,8 @@ class SectionHeader extends StatelessWidget {
         ],
         Text(
           title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
