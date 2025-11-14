@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
-import 'package:inventory_tracker/views/home/home_screen.dart';
+import 'package:inventory_tracker/views/home/.fgot/home.dart';
+import 'package:inventory_tracker/views/home/mian_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:inventory_tracker/viewmodels/room_provider.dart';
+import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
 
 class OnboardingScreen2 extends StatefulWidget {
@@ -71,7 +72,7 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
       return;
     }
 
-    final roomProvider = Provider.of<RoomProvider>(context, listen: false);
+    final inventoryProvider = Provider.of<InventoryProvider>(context, listen: false);
     
     // Add all rooms to the provider
     addedRooms.forEach((roomName, count) {
@@ -85,7 +86,7 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
           location: widget.locationName,
         );
         
-        roomProvider.addRoom(room);
+        inventoryProvider.addRoom(room);
       }
     });
 
@@ -93,7 +94,7 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
+        builder: (context) => const MainScreen(),
       ),
     );
   }

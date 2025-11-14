@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/core/theme/app_theme.dart';
-import 'package:inventory_tracker/viewmodels/room_provider.dart';
-import 'package:inventory_tracker/views/home/home_screen.dart';
+import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
+import 'package:inventory_tracker/views/home/.fgot/home.dart';
 import 'package:inventory_tracker/views/onboarding/onboarding_screen_1.dart';
 
 void main() {
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => RoomProvider()),
+        ChangeNotifierProvider(create: (_) => InventoryProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
