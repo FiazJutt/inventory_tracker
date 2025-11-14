@@ -2,41 +2,94 @@ import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
+import 'package:inventory_tracker/models/room_model.dart';
+import 'package:inventory_tracker/models/container_model.dart';
+import 'package:inventory_tracker/models/item_model.dart';
 
-import '../roomScreens/room_detail_screen/room_detail_screen.dart';
+import '../room_detail_screen/room_detail_screen.dart';
+import '../settings/settings_screen.dart';
+import '../containerItem/detail/container_item_detail_screen.dart';
+import '../location_detail_list/location_detail_list_screen.dart';
+import 'widgets/filter_segment_control.dart';
+import 'widgets/home_search_bar.dart';
+import 'widgets/room_list_item.dart';
+import 'widgets/container_list_item.dart';
+import 'widgets/item_list_item.dart';
+import 'widgets/location_list_item.dart';
+import 'widgets/empty_state_widget.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  HomeViewType _selectedView = HomeViewType.rooms;
+  String _searchQuery = '';
+
+  String get _searchHint {
+    switch (_selectedView) {
+      case HomeViewType.rooms:
+        return 'Search rooms...';
+      case HomeViewType.containers:
+        return 'Search containers...';
+      case HomeViewType.items:
+        return 'Search items...';
+      case HomeViewType.locations:
+        return 'Search locations...';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     return Scaffold(
       extendBody: true,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: colors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          onPressed: () {},
+        automaticallyImplyLeading: false,
+        // leading: IconButton(
+        //   icon: Icon(Icons.settings_outlined, color: colors.textPrimary),
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder: (context) => const SettingsScreen(),
+        //       ),
+        //     );
+        //   },
+        // ),
+        title: Text(
+          'Home',
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Scan QR tapped')),
-            ),
+            icon: Icon(Icons.qr_code_scanner, color: colors.textPrimary),
+            onPressed: () => ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Scan QR tapped'))),
           ),
           IconButton(
-            icon: const Icon(Icons.tune),
+            icon: Icon(Icons.tune, color: colors.textPrimary),
             onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Color tuning tapped')),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.sort),
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Sort tapped')),
-            ),
+            icon: Icon(Icons.sort, color: colors.textPrimary),
+            onPressed: () => ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Sort tapped'))),
           ),
         ],
       ),
@@ -44,33 +97,28 @@ class HomeScreen extends StatelessWidget {
         builder: (context, inventoryProvider, _) {
           return Column(
             children: [
-              // Search bar
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search rooms...',
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: AppColors.textSecondary,
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  ),
-                  onChanged: (value) {
-                    // Implement search functionality
-                  },
-                ),
+              // Filter segment control
+              FilterSegmentControl(
+                selectedView: _selectedView,
+                onViewChanged: (viewType) {
+                  setState(() {
+                    _selectedView = viewType;
+                    _searchQuery = ''; // Clear search when switching views
+                  });
+                },
               ),
-              Expanded(child: _buildRoomList(inventoryProvider)),
+              // Search bar
+              HomeSearchBar(
+                hintText: _searchHint,
+                searchQuery: _searchQuery,
+                onSearchChanged: (query) {
+                  setState(() {
+                    _searchQuery = query;
+                  });
+                },
+              ),
+              // Content list
+              Expanded(child: _buildContentList(inventoryProvider, context)),
             ],
           );
         },
@@ -78,58 +126,189 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRoomList(InventoryProvider inventoryProvider) {
-    if (inventoryProvider.rooms.isEmpty) {
-      return const Center(
-        child: Text('No rooms found. Add a room to get started.'),
+  Widget _buildContentList(
+    InventoryProvider inventoryProvider,
+    BuildContext context,
+  ) {
+    switch (_selectedView) {
+      case HomeViewType.rooms:
+        return _buildRoomsList(inventoryProvider, context);
+      case HomeViewType.containers:
+        return _buildContainersList(inventoryProvider, context);
+      case HomeViewType.items:
+        return _buildItemsList(inventoryProvider, context);
+      case HomeViewType.locations:
+        return _buildLocationsList(inventoryProvider, context);
+    }
+  }
+
+  Widget _buildRoomsList(
+    InventoryProvider inventoryProvider,
+    BuildContext context,
+  ) {
+    List<Room> rooms = inventoryProvider.rooms;
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      rooms = rooms.where((room) {
+        return room.name.toLowerCase().contains(query) ||
+            room.location.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    if (rooms.isEmpty) {
+      return EmptyStateWidget(
+        viewType: _selectedView,
+        isSearching: _searchQuery.isNotEmpty,
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: inventoryProvider.rooms.length,
+      itemCount: rooms.length,
       itemBuilder: (context, index) {
-        final room = inventoryProvider.rooms[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: ListTile(
-            title: Text(
-              room.name,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            subtitle: Text(
-              room.location,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
+        final room = rooms[index];
+        return RoomListItem(
+          room: room,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => RoomDetailScreen(room: room),
               ),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildContainersList(
+    InventoryProvider inventoryProvider,
+    BuildContext context,
+  ) {
+    List<ContainerModel> containers = inventoryProvider.allContainers;
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      containers = inventoryProvider.searchContainers(_searchQuery);
+    }
+
+    if (containers.isEmpty) {
+      return EmptyStateWidget(
+        viewType: _selectedView,
+        isSearching: _searchQuery.isNotEmpty,
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: containers.length,
+      itemBuilder: (context, index) {
+        final container = containers[index];
+        final room = inventoryProvider.getRoomById(container.roomId);
+
+        return ContainerListItem(
+          container: container,
+          room: room,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) =>
+                    ContainerItemDetailScreen(item: container, isItem: false),
               ),
-              child: const Text(
-                'Room',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildItemsList(
+    InventoryProvider inventoryProvider,
+    BuildContext context,
+  ) {
+    List<Item> items = inventoryProvider.allItems;
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      items = inventoryProvider.searchItems(_searchQuery);
+    }
+
+    if (items.isEmpty) {
+      return EmptyStateWidget(
+        viewType: _selectedView,
+        isSearching: _searchQuery.isNotEmpty,
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        final room = inventoryProvider.getRoomById(item.roomId);
+        ContainerModel? container;
+        if (item.containerId != null) {
+          container = inventoryProvider.getContainerById(
+            item.roomId,
+            item.containerId!,
+          );
+        }
+
+        return ItemListItem(
+          item: item,
+          room: room,
+          container: container,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) =>
+                    ContainerItemDetailScreen(item: item, isItem: true),
               ),
-            ),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => RoomDetailScreen(room: room),
-                ),
-              );
-            },
-          ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildLocationsList(
+    InventoryProvider inventoryProvider,
+    BuildContext context,
+  ) {
+    List<String> locations = inventoryProvider.allLocations;
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      locations = locations
+          .where((location) => location.toLowerCase().contains(query))
+          .toList();
+    }
+
+    if (locations.isEmpty) {
+      return EmptyStateWidget(
+        viewType: _selectedView,
+        isSearching: _searchQuery.isNotEmpty,
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: locations.length,
+      itemBuilder: (context, index) {
+        final location = locations[index];
+        return LocationListItem(
+          location: location,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) =>
+                    LocationDetailListScreen(location: location),
+              ),
+            );
+          },
         );
       },
     );

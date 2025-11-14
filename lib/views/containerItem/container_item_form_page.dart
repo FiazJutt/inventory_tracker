@@ -5,6 +5,7 @@ import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:inventory_tracker/core/widgets/form_widgets/form_widgets.dart';
+import 'widgets/location_info_card.dart';
 
 class ContainerItemFormPage extends StatefulWidget {
   final Room room;
@@ -78,6 +79,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
   }
 
   Future<void> _selectDate(BuildContext context, bool isPurchaseDate) async {
+    final colors = context.appColors;
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: isPurchaseDate
@@ -88,13 +90,13 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
+            colorScheme: ColorScheme.dark(
+              primary: colors.primary,
               onPrimary: Colors.black,
-              surface: AppColors.surface,
-              onSurface: AppColors.textPrimary,
+              surface: colors.surface,
+              onSurface: colors.textPrimary,
             ),
-            dialogBackgroundColor: AppColors.background,
+            dialogBackgroundColor: colors.background,
           ),
           child: child!,
         );
@@ -114,6 +116,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
 
 
   Future<void> _addContainer() async {
+    final colors = context.appColors;
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
@@ -196,7 +199,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
                 ? 'Item "$containerName" added to $locationText'
                 : 'Container "$containerName" added to ${widget.room.name}',
           ),
-          backgroundColor: AppColors.primary,
+          backgroundColor: colors.primary,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
           shape: RoundedRectangleBorder(
@@ -209,19 +212,20 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    final colors = context.appColors;
+      return Scaffold(
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           widget.isAddItemScreen ? 'Add Item' : 'Add Container',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -236,134 +240,15 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Location Info Card
-                    Text(
-                      widget.isAddItemScreen
-                          ? 'Adding item to:'
-                          : 'Adding container to:',
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
+                    LocationInfoCard(
+                      room: widget.room,
+                      container: widget.container,
+                      isAddItemScreen: widget.isAddItemScreen,
                     ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.primary.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          // Room info
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.meeting_room,
-                                  color: AppColors.primary,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      widget.room.name,
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on,
-                                          size: 14,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          widget.room.location,
-                                          style: const TextStyle(
-                                            color: AppColors.textSecondary,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          
-                          // Container info (if item is being added to a container)
-                          if (widget.container != null && widget.isAddItemScreen) ...[
-                            const SizedBox(height: 12),
-                            const Divider(),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.inventory_2,
-                                    color: AppColors.primary,
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Container',
-                                        style: TextStyle(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        widget.container!.name,
-                                        style: const TextStyle(
-                                          color: AppColors.textPrimary,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-
                     const SizedBox(height: 32),
 
                     // Rest of the form (unchanged)
-                    const SectionHeader(title: 'Basic Information'),
+                    SectionHeader(title: 'Basic Information'),
                     const SizedBox(height: 16),
 
                     CustomTextField(
@@ -433,7 +318,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
                     const SizedBox(height: 32),
 
                     // Purchase Information Section
-                    const SectionHeader(title: 'Purchase Information'),
+                    SectionHeader(title: 'Purchase Information'),
                     const SizedBox(height: 16),
 
                     CustomTextField(
@@ -468,7 +353,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
                     const SizedBox(height: 32),
 
                     // Current Information Section
-                    const SectionHeader(title: 'Current Information'),
+                    SectionHeader(title: 'Current Information'),
                     const SizedBox(height: 16),
 
                     CustomTextField(
@@ -509,7 +394,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
                     const SizedBox(height: 32),
 
                     // Additional Information Section
-                    const SectionHeader(title: 'Additional Information'),
+                    SectionHeader(title: 'Additional Information'),
                     const SizedBox(height: 16),
 
                     CustomTextField(
@@ -552,7 +437,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: colors.background,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
