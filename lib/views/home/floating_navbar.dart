@@ -10,10 +10,10 @@ class FloatingNavbar extends StatefulWidget {
   final ValueChanged<int> onTabSelected;
 
   const FloatingNavbar({
-    Key? key,
+    super.key,
     required this.selectedIndex,
     required this.onTabSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<FloatingNavbar> createState() => _FloatingNavbarState();

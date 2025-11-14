@@ -8,7 +8,7 @@ import 'package:inventory_tracker/models/room_model.dart';
 class RoomCreationScreen extends StatefulWidget {
   final String? selectedLocation;
 
-  const RoomCreationScreen({Key? key, this.selectedLocation}) : super(key: key);
+  const RoomCreationScreen({super.key, this.selectedLocation});
 
   @override
   State<RoomCreationScreen> createState() => _RoomCreationScreenState();

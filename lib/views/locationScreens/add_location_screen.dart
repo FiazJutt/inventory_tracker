@@ -5,7 +5,7 @@ import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/views/roomScreens/room_creation_screen.dart';
 
 class AddLocationScreen extends StatefulWidget {
-  const AddLocationScreen({Key? key}) : super(key: key);
+  const AddLocationScreen({super.key});
 
   @override
   State<AddLocationScreen> createState() => _AddLocationScreenState();

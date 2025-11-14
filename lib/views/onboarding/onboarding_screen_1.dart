@@ -3,7 +3,7 @@ import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:inventory_tracker/views/onboarding/onboarding_screen_2.dart';
 
 class OnboardingScreen1 extends StatefulWidget {
-  const OnboardingScreen1({Key? key}) : super(key: key);
+  const OnboardingScreen1({super.key});
 
   @override
   State<OnboardingScreen1> createState() => _OnboardingScreen1State();

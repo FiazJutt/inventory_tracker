@@ -15,7 +15,7 @@ class CustomButton extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.icon,
@@ -25,7 +25,7 @@ class CustomButton extends StatelessWidget {
     this.height,
     this.width,
     this.padding,
-  }) : super(key: key);
+  });
 
   Color _getBackgroundColor() {
     switch (type) {

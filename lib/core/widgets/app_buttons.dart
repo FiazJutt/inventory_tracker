@@ -19,7 +19,7 @@ class AppButton extends StatelessWidget {
   final bool isElevated;
 
   const AppButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.onPressed,
     this.backgroundColor,
@@ -33,7 +33,7 @@ class AppButton extends StatelessWidget {
     this.iconSize = 20,
     this.fullWidth = true,
     this.isElevated = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

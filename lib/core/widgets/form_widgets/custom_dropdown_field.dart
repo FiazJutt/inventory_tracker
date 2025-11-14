@@ -12,7 +12,7 @@ class CustomDropdownField<T> extends StatelessWidget {
   final String Function(T)? itemLabel;
 
   const CustomDropdownField({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     required this.items,
@@ -21,7 +21,7 @@ class CustomDropdownField<T> extends StatelessWidget {
     this.required = false,
     this.hint = 'Select an option',
     this.itemLabel,
-  }) : super(key: key);
+  });
 
   String _getItemLabel(T item) {
     if (itemLabel != null) {

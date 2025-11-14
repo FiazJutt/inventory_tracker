@@ -4,7 +4,7 @@ import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 
 class LocationSelectionScreen extends StatefulWidget {
-  const LocationSelectionScreen({Key? key}) : super(key: key);
+  const LocationSelectionScreen({super.key});
 
   @override
   State<LocationSelectionScreen> createState() => _LocationSelectionScreenState();

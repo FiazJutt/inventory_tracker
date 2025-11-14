@@ -10,14 +10,14 @@ class CustomDateField extends StatelessWidget {
   final String? Function(DateTime?)? validator;
 
   const CustomDateField({
-    Key? key,
+    super.key,
     required this.label,
     required this.date,
     required this.onTap,
     required this.icon,
     this.required = false,
     this.validator,
-  }) : super(key: key);
+  });
 
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';

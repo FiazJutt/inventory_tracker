@@ -11,10 +11,10 @@ class MoveItemScreen extends StatefulWidget {
   final String currentRoomId;
 
   const MoveItemScreen({
-    Key? key,
+    super.key,
     required this.item,
     required this.currentRoomId,
-  }) : super(key: key);
+  });
 
   @override
   _MoveItemScreenState createState() => _MoveItemScreenState();

@@ -10,9 +10,9 @@ class OnboardingScreen2 extends StatefulWidget {
   final String locationName;
   
   const OnboardingScreen2({
-    Key? key,
+    super.key,
     required this.locationName,
-  }) : super(key: key);
+  });
 
   @override
   State<OnboardingScreen2> createState() => _OnboardingScreen2State();
