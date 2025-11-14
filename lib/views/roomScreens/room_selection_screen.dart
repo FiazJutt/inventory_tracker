@@ -6,6 +6,11 @@ import 'package:inventory_tracker/models/container_model.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 
 import '../containerItem/container_item_form_page.dart';
+import 'widgets/room_list_item.dart';
+import 'widgets/container_list_item.dart';
+import 'widgets/direct_room_option.dart';
+import 'package:inventory_tracker/views/locationScreens/widgets/location_search_bar.dart';
+import 'package:inventory_tracker/views/shared/empty_state.dart';
 
 class RoomSelectionScreen extends StatefulWidget {
   final bool isAddItemScreen;
@@ -75,13 +80,14 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () {
             if (_showContainers) {
               _backToRoomSelection();
@@ -92,8 +98,8 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
         ),
         title: Text(
           widget.isAddItemScreen ? 'Add Item' : 'Add Container',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -105,6 +111,7 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
   }
 
   Widget _buildRoomSelectionView() {
+    final colors = context.appColors;
     return Column(
       children: [
         // Header
@@ -121,8 +128,8 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                     : 'Selected: ${_selectedRoom!.name}',
                 style: TextStyle(
                   color: _selectedRoom == null 
-                      ? AppColors.textSecondary 
-                      : AppColors.primary,
+                      ? colors.textSecondary 
+                      : colors.primary,
                   fontSize: 14,
                   fontWeight: _selectedRoom == null 
                       ? FontWeight.normal 
@@ -133,35 +140,14 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
           ),
         ),
         
-        // Search bar
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: TextField(
-            controller: _searchController,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Search rooms...',
-              hintStyle: TextStyle(
-                color: AppColors.textSecondary.withOpacity(0.6),
-              ),
-              prefixIcon: const Icon(
-                Icons.search,
-                color: AppColors.textSecondary,
-              ),
-              filled: true,
-              fillColor: AppColors.surface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
-            ),
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value.toLowerCase();
-              });
-            },
-          ),
+        LocationSearchBar(
+          controller: _searchController,
+          hintText: 'Search rooms...',
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value.toLowerCase();
+            });
+          },
         ),
         
         const SizedBox(height: 16),
@@ -176,39 +162,16 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
               }).toList();
 
               if (filteredRooms.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _searchQuery.isEmpty 
-                            ? Icons.meeting_room_outlined 
-                            : Icons.search_off,
-                        size: 64,
-                        color: AppColors.textSecondary.withOpacity(0.5),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _searchQuery.isEmpty
-                            ? 'No rooms available'
-                            : 'No rooms found for "$_searchQuery"',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 16,
-                        ),
-                      ),
-                      if (_searchQuery.isEmpty) ...[
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Add a room first from the home screen',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                return EmptyState(
+                  icon: _searchQuery.isEmpty
+                      ? Icons.meeting_room_outlined
+                      : Icons.search_off,
+                  message: _searchQuery.isEmpty
+                      ? 'No rooms available'
+                      : 'No rooms found for "$_searchQuery"',
+                  subtitle: _searchQuery.isEmpty
+                      ? 'Add a room first from the home screen'
+                      : null,
                 );
               }
 
@@ -217,95 +180,13 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                 itemCount: filteredRooms.length,
                 itemBuilder: (context, index) {
                   final room = filteredRooms[index];
-                  final isSelected = _selectedRoom?.id == room.id;
                   final containerCount = inventoryProvider.getContainers(room.id).length;
-                  
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected 
-                          ? AppColors.primary.withOpacity(0.1)
-                          : AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected 
-                            ? AppColors.primary 
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      leading: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.primary.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.meeting_room,
-                          color: isSelected ? Colors.black : AppColors.primary,
-                          size: 24,
-                        ),
-                      ),
-                      title: Text(
-                        room.name,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on,
-                                size: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                room.location,
-                                style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (containerCount > 0 && widget.isAddItemScreen) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              '$containerCount container${containerCount == 1 ? '' : 's'}',
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      trailing: Icon(
-                        isSelected 
-                            ? Icons.check_circle 
-                            : Icons.arrow_forward_ios,
-                        color: isSelected 
-                            ? AppColors.primary 
-                            : AppColors.textSecondary,
-                        size: isSelected ? 24 : 16,
-                      ),
-                      onTap: () => _onRoomSelected(room),
-                    ),
+
+                  return RoomListItem(
+                    room: room,
+                    isSelected: _selectedRoom?.id == room.id,
+                    containerCount: widget.isAddItemScreen ? containerCount : null,
+                    onTap: () => _onRoomSelected(room),
                   );
                 },
               );
@@ -322,18 +203,18 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
               child: ElevatedButton(
                 onPressed: _navigateToForm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Continue',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: colors.textPrimary,
                   ),
                 ),
               ),
@@ -344,6 +225,7 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
   }
 
   Widget _buildContainerSelectionView() {
+    final colors = context.appColors;
     return Consumer<InventoryProvider>(
       builder: (context, inventoryProvider, _) {
         final containers = inventoryProvider.getContainers(_selectedRoom!.id);
@@ -358,8 +240,8 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                 children: [
                   Text(
                     'Room: ${_selectedRoom!.name}',
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: colors.textSecondary,
                       fontSize: 14,
                     ),
                   ),
@@ -370,8 +252,8 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                         : 'Selected: ${_selectedContainer!.name}',
                     style: TextStyle(
                       color: _selectedContainer == null 
-                          ? AppColors.textPrimary 
-                          : AppColors.primary,
+                          ? colors.textPrimary 
+                          : colors.primary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -380,69 +262,10 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
               ),
             ),
 
-            // Add directly to room option
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(
-                  color: _selectedContainer == null
-                      ? AppColors.primary.withOpacity(0.1)
-                      : AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _selectedContainer == null
-                        ? AppColors.primary
-                        : Colors.transparent,
-                    width: 2,
-                  ),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: _selectedContainer == null
-                          ? AppColors.primary
-                          : AppColors.primary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.meeting_room,
-                      color: _selectedContainer == null ? Colors.black : AppColors.primary,
-                      size: 24,
-                    ),
-                  ),
-                  title: const Text(
-                    'Directly in Room',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: const Text(
-                    'Not in a container',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                  trailing: Icon(
-                    _selectedContainer == null
-                        ? Icons.check_circle
-                        : Icons.arrow_forward_ios,
-                    color: _selectedContainer == null
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
-                    size: _selectedContainer == null ? 24 : 16,
-                  ),
-                  onTap: () => _onContainerSelected(null),
-                ),
-              ),
+            DirectRoomOption(
+              isSelected: _selectedContainer == null,
+              subtitle: 'Not in a container',
+              onTap: () => _onContainerSelected(null),
             ),
 
             if (containers.isNotEmpty) ...[
@@ -450,12 +273,12 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Divider(),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Text(
                   'OR SELECT A CONTAINER',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1,
@@ -467,14 +290,14 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
             // Container list
             Expanded(
               child: containers.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Padding(
-                        padding: EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.all(20.0),
                         child: Text(
                           'No containers in this room.\nYou can add the item directly to the room.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                             fontSize: 14,
                           ),
                         ),
@@ -485,73 +308,16 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                       itemCount: containers.length,
                       itemBuilder: (context, index) {
                         final container = containers[index];
-                        final isSelected = _selectedContainer?.id == container.id;
                         final itemCount = inventoryProvider.getContainerItemCount(
                           _selectedRoom!.id,
                           container.id,
                         );
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary.withOpacity(0.1)
-                                : AppColors.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            leading: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.primary.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.inventory_2,
-                                color: isSelected ? Colors.black : AppColors.primary,
-                                size: 24,
-                              ),
-                            ),
-                            title: Text(
-                              container.name,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
-                            subtitle: itemCount > 0
-                                ? Text(
-                                    '$itemCount item${itemCount == 1 ? '' : 's'}',
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  )
-                                : null,
-                            trailing: Icon(
-                              isSelected
-                                  ? Icons.check_circle
-                                  : Icons.arrow_forward_ios,
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary,
-                              size: isSelected ? 24 : 16,
-                            ),
-                            onTap: () => _onContainerSelected(container),
-                          ),
+                        return ContainerListItem(
+                          container: container,
+                          isSelected: _selectedContainer?.id == container.id,
+                          itemCount: itemCount,
+                          onTap: () => _onContainerSelected(container),
                         );
                       },
                     ),
@@ -565,18 +331,18 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                 child: ElevatedButton(
                   onPressed: _navigateToForm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: colors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Continue',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: colors.textPrimary,
                     ),
                   ),
                 ),

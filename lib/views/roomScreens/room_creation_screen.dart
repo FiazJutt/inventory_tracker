@@ -4,6 +4,10 @@ import 'package:inventory_tracker/views/locationScreens/location_selection_scree
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
+import 'package:inventory_tracker/views/onboarding/widgets/onboarding_header.dart';
+import 'package:inventory_tracker/views/onboarding/widgets/location_badge.dart';
+import 'package:inventory_tracker/views/onboarding/widgets/suggestion_chip.dart';
+import 'package:inventory_tracker/views/onboarding/widgets/room_counter_card.dart';
 
 class RoomCreationScreen extends StatefulWidget {
   final String? selectedLocation;
@@ -77,20 +81,22 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
 
   void _saveRoomsAndNavigate() {
     if (_selectedLocation == null || _selectedLocation!.isEmpty) {
+      final colors = context.appColors;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Please select a location first'),
-          backgroundColor: Colors.orange,
+          backgroundColor: colors.error,
         ),
       );
       return;
     }
 
     if (addedRooms.isEmpty) {
+      final colors = context.appColors;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Please add at least one room'),
-          backgroundColor: Colors.orange,
+          backgroundColor: colors.error,
         ),
       );
       return;
@@ -115,10 +121,11 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
     });
 
     // Show success message
+    final colors = context.appColors;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${addedRooms.length} room${addedRooms.length == 1 ? "" : "s"} added to $_selectedLocation!'),
-        backgroundColor: AppColors.primary,
+          backgroundColor: colors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -132,18 +139,19 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Add Rooms',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -159,78 +167,53 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Add Rooms 🏡",
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      OnboardingHeader(
+                        title: "Add Rooms 🏡",
+                        subtitle:
+                            "Add rooms where your items belong. You can create your own or choose from suggestions.",
                       ),
-                      const SizedBox(height: 8),
-
-                      Text(
-                        "Add rooms where your items belong. You can create your own or choose from suggestions.",
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 15,
-                          height: 1.4,
-                        ),
-                      ),
-
                       const SizedBox(height: 12),
                       GestureDetector(
                         onTap: _selectLocation,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _selectedLocation == null
-                                ? AppColors.surface
-                                : AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _selectedLocation == null
-                                  ? AppColors.textSecondary.withOpacity(0.3)
-                                  : AppColors.primary.withOpacity(0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.location_on,
-                                size: 16,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(width: 6),
-                              if (_selectedLocation == null)
-                                const Text(
-                                  'Select Location',
-                                  style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                )
-                              else
-                                Text(
-                                  _selectedLocation!,
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600,
+                        child: _selectedLocation == null
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.surface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: colors.textSecondary.withOpacity(0.3),
                                   ),
                                 ),
-                              const Spacer(),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
-                                color: AppColors.textSecondary,
-                              ),
-                            ],
-                          ),
-                        ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      size: 16,
+                                      color: colors.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Select Location',
+                                      style: TextStyle(
+                                        color: colors.textSecondary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 16,
+                                      color: colors.textSecondary,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : LocationBadge(location: _selectedLocation!),
                       ),
 
                       const SizedBox(height: 32),
@@ -239,14 +222,14 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                           Expanded(
                             child: TextField(
                               controller: _controller,
-                              style: const TextStyle(color: AppColors.textPrimary),
+                              style: TextStyle(color: colors.textPrimary),
                               decoration: InputDecoration(
                                 hintText: 'Custom Room Name',
                                 hintStyle: TextStyle(
-                                  color: AppColors.textSecondary.withOpacity(0.6),
+                                  color: colors.textSecondary.withOpacity(0.6),
                                 ),
                                 filled: true,
-                                fillColor: AppColors.surface,
+                                fillColor: colors.surface,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 18,
                                   vertical: 14,
@@ -258,7 +241,7 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(14),
                                   borderSide: BorderSide(
-                                    color: AppColors.primary,
+                                    color: colors.primary,
                                     width: 2,
                                   ),
                                 ),
@@ -277,13 +260,13 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: colors.primary,
                               padding: const EdgeInsets.all(14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
                             ),
-                            child: const Icon(Icons.add, color: Colors.black),
+                            child: Icon(Icons.add, color: colors.textPrimary),
                           ),
                         ],
                       ),
@@ -293,86 +276,37 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: colors.surface,
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Text(
+                          child: Text(
                             'No rooms added yet. Create a Custom One OR tap suggestions below to add.',
-                            style: TextStyle(color: AppColors.textSecondary),
+                            style: TextStyle(color: colors.textSecondary),
                           ),
                         )
                       else
-                        Column(
-                          children: addedRooms.entries.map((entry) {
-                            final roomName = entry.key;
-                            final count = entry.value;
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.12),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    roomName,
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            final current = addedRooms[roomName] ?? 1;
-                                            if (current > 1) {
-                                              addedRooms[roomName] = current - 1;
-                                            } else {
-                                              addedRooms.remove(roomName);
-                                            }
-                                          });
-                                        },
-                                        icon: const Icon(
-                                          Icons.remove_circle_outline,
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                      Text(
-                                        '$count',
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            addedRooms[roomName] = (addedRooms[roomName] ?? 0) + 1;
-                                          });
-                                        },
-                                        icon: const Icon(
-                                          Icons.add_circle_outline,
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                        ...addedRooms.entries.map((entry) {
+                          return RoomCounterCard(
+                            roomName: entry.key,
+                            count: entry.value,
+                            onDecrement: () {
+                              setState(() {
+                                final current = addedRooms[entry.key] ?? 1;
+                                if (current > 1) {
+                                  addedRooms[entry.key] = current - 1;
+                                } else {
+                                  addedRooms.remove(entry.key);
+                                }
+                              });
+                            },
+                            onIncrement: () {
+                              setState(() {
+                                addedRooms[entry.key] =
+                                    (addedRooms[entry.key] ?? 0) + 1;
+                              });
+                            },
+                          );
+                        }),
                       const SizedBox(height: 32),
 
                       Wrap(
@@ -380,29 +314,12 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                         runSpacing: 8,
                         alignment: WrapAlignment.start,
                         children: roomSuggestions.map((suggestion) {
-                          final isSelected = addedRooms.containsKey(suggestion);
-                          return ChoiceChip(
-                            label: Text(suggestion),
-                            labelStyle: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : AppColors.primary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            selectedColor: AppColors.primary,
-                            backgroundColor: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.primary.withOpacity(0.25),
-                              ),
-                            ),
-                            selected: isSelected,
-                            onSelected: (_) {
+                          return SuggestionChip(
+                            label: suggestion,
+                            isSelected: addedRooms.containsKey(suggestion),
+                            onTap: () {
                               setState(() {
-                                if (isSelected) {
+                                if (addedRooms.containsKey(suggestion)) {
                                   addedRooms.remove(suggestion);
                                 } else {
                                   addedRooms[suggestion] = 1;
@@ -424,14 +341,14 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    label: const Text(
+                      label: Text(
                       'Create',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      style: TextStyle(fontSize: 16, color: colors.textPrimary),
                     ),
-                    icon: const Icon(Icons.check, color: Colors.black),
+                    icon: Icon(Icons.check, color: colors.textPrimary),
                     onPressed: _selectedLocation != null ? _saveRoomsAndNavigate : _selectLocation,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: colors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
