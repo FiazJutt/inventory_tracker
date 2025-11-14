@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
+import 'widgets/location_search_bar.dart';
+import 'widgets/location_list_item.dart';
+import 'package:inventory_tracker/views/shared/empty_state.dart';
 
 class LocationSelectionScreen extends StatefulWidget {
   const LocationSelectionScreen({super.key});
@@ -23,19 +26,20 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Select Location',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -54,8 +58,8 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                       : 'Selected: $_selectedLocation',
                   style: TextStyle(
                     color: _selectedLocation == null
-                        ? AppColors.textSecondary
-                        : AppColors.primary,
+                        ? colors.textSecondary
+                        : colors.primary,
                     fontSize: 14,
                     fontWeight: _selectedLocation == null
                         ? FontWeight.normal
@@ -66,36 +70,15 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
             ),
           ),
 
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search locations...',
-                hintStyle: TextStyle(
-                  color: AppColors.textSecondary.withOpacity(0.6),
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: AppColors.textSecondary,
-                ),
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
-            ),
-          ),
+        LocationSearchBar(
+          controller: _searchController,
+          hintText: 'Search locations...',
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value.toLowerCase();
+            });
+          },
+        ),
 
           const SizedBox(height: 16),
 
@@ -109,39 +92,16 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                     .toList();
 
                 if (allLocations.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _searchQuery.isEmpty
-                              ? Icons.location_on_outlined
-                              : Icons.search_off,
-                          size: 64,
-                          color: AppColors.textSecondary.withOpacity(0.5),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchQuery.isEmpty
-                              ? 'No locations available'
-                              : 'No locations found for "$_searchQuery"',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 16,
-                          ),
-                        ),
-                        if (_searchQuery.isEmpty) ...[
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Add a location first from the home screen',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                  return EmptyState(
+                    icon: _searchQuery.isEmpty
+                        ? Icons.location_on_outlined
+                        : Icons.search_off,
+                    message: _searchQuery.isEmpty
+                        ? 'No locations available'
+                        : 'No locations found for "$_searchQuery"',
+                    subtitle: _searchQuery.isEmpty
+                        ? 'Add a location first from the home screen'
+                        : null,
                   );
                 }
 
@@ -150,71 +110,20 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                   itemCount: allLocations.length,
                   itemBuilder: (context, index) {
                     final location = allLocations[index];
-                    final isSelected = _selectedLocation == location;
+                    return LocationListItem(
+                      location: location,
+                      isSelected: _selectedLocation == location,
+                      onTap: () {
+                        setState(() {
+                          _selectedLocation = location;
+                        });
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primary.withOpacity(0.1)
-                            : AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        leading: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.primary.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.location_on,
-                            color: isSelected ? Colors.black : AppColors.primary,
-                            size: 24,
-                          ),
-                        ),
-                        title: Text(
-                          location,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                        trailing: Icon(
-                          isSelected
-                              ? Icons.check_circle
-                              : Icons.arrow_forward_ios,
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          size: isSelected ? 24 : 16,
-                        ),
-                        onTap: () {
-                          setState(() {
-                            _selectedLocation = location;
-                          });
-
-                          // Return the selected location to the previous screen
-                          Future.delayed(const Duration(milliseconds: 300), () {
-                            if (mounted) {
-                              Navigator.pop(context, location);
-                            }
-                          });
-                        },
-                      ),
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          if (mounted) {
+                            Navigator.pop(context, location);
+                          }
+                        });
+                      },
                     );
                   },
                 );
@@ -233,18 +142,18 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                     Navigator.pop(context, _selectedLocation);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: colors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Confirm Selection',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: colors.textPrimary,
                     ),
                   ),
                 ),
