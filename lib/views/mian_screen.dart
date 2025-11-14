@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_tracker/views/home/floating_navbar.dart';
+import 'package:inventory_tracker/views/floating_navbar.dart';
 import 'package:inventory_tracker/views/home/home_screen.dart';
-import 'package:inventory_tracker/views/home/location_detail_list_screen.dart';
-
+// import 'package:inventory_tracker/views/location_detail_list/location_detail_list_screen.dart';
+import 'package:inventory_tracker/views/settings/settings_screen.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -16,7 +16,8 @@ class _MainScreenState extends State<MainScreen> {
   // List of screens for each tab
   final List<Widget> _screens = const [
     HomeScreen(),
-    LocationDetailListScreen(),
+    // LocationDetailListScreen(),
+    SettingsScreen(),
   ];
 
   void _onTabSelected(int index) {

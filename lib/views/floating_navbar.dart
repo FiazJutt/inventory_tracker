@@ -104,12 +104,13 @@ class _FloatingNavbarState extends State<FloatingNavbar>
                 children: [
                   _buildNavItem(0, context, Icons.home_filled, 'Home'),
                   const SizedBox(width: 56),
-                  _buildNavItem(
-                    1,
-                    context,
-                    Icons.location_on,
-                    'Locations',
-                  ),
+                  _buildNavItem(1, context, Icons.settings_outlined, 'Settings'),
+                  // _buildNavItem(
+                  //   1,
+                  //   context,
+                  //   Icons.location_on,
+                  //   'Locations',
+                  // ),
                 ],
               ),
             ),
