@@ -15,7 +15,6 @@ class _OnboardingScreen1State extends State<OnboardingScreen1> {
   final List<String> locationSuggestions = const [
     'Home',
     'Office',
-    'Car',
     'Parent\'s House',
     'Vacation Home',
     'Storage Unit',

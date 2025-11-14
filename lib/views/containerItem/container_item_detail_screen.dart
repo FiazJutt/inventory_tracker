@@ -9,10 +9,10 @@ class ContainerItemDetailScreen extends StatelessWidget {
   final bool isItem;
 
   const ContainerItemDetailScreen({
-    Key? key,
+    super.key,
     required this.item,
     this.isItem = false,
-  }) : super(key: key);
+  });
 
   // Helper methods to safely get properties
   String get itemName {
@@ -184,46 +184,6 @@ class ContainerItemDetailScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
-            onSelected: (value) {
-              if (value == 'delete') _showDeleteDialog(context);
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'duplicate',
-                child: Row(
-                  children: [
-                    Icon(Icons.copy, size: 20),
-                    SizedBox(width: 12),
-                    Text('Duplicate'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'move',
-                child: Row(
-                  children: [
-                    Icon(Icons.drive_file_move_outline, size: 20),
-                    SizedBox(width: 12),
-                    Text('Move'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red, size: 20),
-                    SizedBox(width: 12),
-                    Text('Delete', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
 
       body: SingleChildScrollView(
@@ -499,9 +459,7 @@ class ContainerItemDetailScreen extends StatelessWidget {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             onSelected: (value) {
-              if (value == 'delete') {
-                _showDeleteDialog(context);
-              }
+
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -511,16 +469,6 @@ class ContainerItemDetailScreen extends StatelessWidget {
                     Icon(Icons.edit, size: 20),
                     SizedBox(width: 12),
                     Text('Edit'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red, size: 20),
-                    SizedBox(width: 12),
-                    Text('Delete', style: TextStyle(color: Colors.red)),
                   ],
                 ),
               ),
@@ -1021,67 +969,4 @@ class ContainerItemDetailScreen extends StatelessWidget {
         (itemSearchMetadata?.isNotEmpty ?? false);
   }
 
-  void _showDeleteDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.delete, color: Colors.red, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Delete ${isItem ? 'Item' : 'Container'}',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to delete "$itemName"? This action cannot be undone.',
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx); // Close dialog
-              Navigator.pop(context); // Go back to room detail
-              // TODO: Call delete method from provider
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '${isItem ? 'Item' : 'Container'} "$itemName" deleted',
-                  ),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
 }

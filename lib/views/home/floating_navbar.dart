@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
-import 'package:inventory_tracker/views/creation_screens/room_selection_screen.dart';
-import 'package:inventory_tracker/views/creation_screens/add_location_screen.dart';
-import 'package:inventory_tracker/views/creation_screens/room_creation_screen.dart';
+import 'package:inventory_tracker/views/roomScreens/room_selection_screen.dart';
+import 'package:inventory_tracker/views/locationScreens/add_location_screen.dart';
+import 'package:inventory_tracker/views/roomScreens/room_creation_screen.dart';
 
 class FloatingNavbar extends StatefulWidget {
   final int selectedIndex;

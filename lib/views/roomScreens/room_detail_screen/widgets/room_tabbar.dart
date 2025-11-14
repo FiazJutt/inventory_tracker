@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
-import 'package:inventory_tracker/models/room_model.dart';
-import 'package:inventory_tracker/views/room_detail_screen/widgets/empty_state.dart';
 
 class RoomTabBar extends StatelessWidget {
   final TabController tabController;

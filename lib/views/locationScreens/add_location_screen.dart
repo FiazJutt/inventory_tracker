@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
-import 'package:inventory_tracker/views/creation_screens/room_creation_screen.dart';
+import 'package:inventory_tracker/views/roomScreens/room_creation_screen.dart';
 
 class AddLocationScreen extends StatefulWidget {
   const AddLocationScreen({Key? key}) : super(key: key);
@@ -18,7 +18,6 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
   final List<String> locationSuggestions = const [
     'Home',
     'Office',
-    'Car',
     'Parent\'s House',
     'Vacation Home',
     'Storage Unit',

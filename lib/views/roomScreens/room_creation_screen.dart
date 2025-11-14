@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
-import 'package:inventory_tracker/views/creation_screens/location_selection_screen.dart';
+import 'package:inventory_tracker/views/locationScreens/location_selection_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
@@ -25,9 +25,7 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
     'Kitchen',
     'Dining Room',
     'Office',
-    'Laundry Room',
     'Garage',
-    'Toilet',
     'Hallway',
     'Pantry',
     'Basement',

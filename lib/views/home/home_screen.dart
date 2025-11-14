@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
-import 'package:inventory_tracker/views/room_detail_screen/room_detail_screen.dart';
+
+import '../roomScreens/room_detail_screen/room_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
