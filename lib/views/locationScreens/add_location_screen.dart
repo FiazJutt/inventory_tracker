@@ -3,6 +3,8 @@ import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/views/roomScreens/room_creation_screen.dart';
+import 'package:inventory_tracker/views/onboarding/widgets/onboarding_header.dart';
+import 'package:inventory_tracker/views/onboarding/widgets/suggestion_chip.dart';
 
 class AddLocationScreen extends StatefulWidget {
   const AddLocationScreen({super.key});
@@ -48,10 +50,11 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
       inventoryProvider.addLocation(_selectedLocation!);
       
       // Show success snackbar
+      final colors = context.appColors;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Location "${_selectedLocation}" added successfully!'),
-          backgroundColor: AppColors.primary,
+          backgroundColor: colors.primary,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -75,19 +78,21 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: colors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Add Location',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -103,38 +108,22 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 40),
-                      Text(
-                        "Let's add a location 📍",
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
+                      OnboardingHeader(
+                        title: "Let's add a location 📍",
+                        subtitle: "Create a new location to organize your inventory.",
                       ),
-                      const SizedBox(height: 8),
-
-                      Text(
-                        "Create a new location to organize your inventory.",
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 15,
-                          height: 1.4,
-                        ),
-                      ),
-
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 20),
                       TextField(
                         controller: _controller,
-                        style: const TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(color: colors.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Location Name',
                           hintStyle: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                             fontSize: 16,
                           ),
                           filled: true,
-                          fillColor: AppColors.surface,
+                          fillColor: colors.surface,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.all(Radius.circular(15)),
                             borderSide: BorderSide.none,
@@ -142,7 +131,7 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.all(Radius.circular(15)),
                             borderSide: BorderSide(
-                              color: AppColors.primary,
+                              color: colors.primary,
                               width: 2,
                             ),
                           ),
@@ -159,28 +148,10 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: locationSuggestions.map((s) {
-                          final selected = _selectedLocation == s;
-                          return ChoiceChip(
-                            label: Text(s),
-                            labelStyle: TextStyle(
-                              color: selected
-                                  ? Colors.white
-                                  : AppColors.primary,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 14,
-                            ),
-                            selectedColor: AppColors.primary,
-                            backgroundColor: AppColors.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: selected
-                                    ? AppColors.primary
-                                    : AppColors.primary.withOpacity(0.25),
-                              ),
-                            ),
-                            selected: selected,
-                            onSelected: (_) {
+                          return SuggestionChip(
+                            label: s,
+                            isSelected: _selectedLocation == s,
+                            onTap: () {
                               setState(() {
                                 _selectedLocation = s;
                                 _controller.text = s;
@@ -206,9 +177,10 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _selectedLocation != null && _selectedLocation!.isNotEmpty
-                          ? AppColors.primary
-                          : AppColors.primary.withOpacity(0.5),
-                      disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                          ? colors.primary
+                          : colors.primary.withOpacity(0.5),
+                      disabledBackgroundColor: colors.primary.withOpacity(0.5),
+                      foregroundColor: colors.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -216,7 +188,7 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                     ),
                     child: const Text(
                       'Add Location',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      style: TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
