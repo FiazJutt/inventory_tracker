@@ -15,7 +15,7 @@ class AddLocationScreen extends StatefulWidget {
 
 class _AddLocationScreenState extends State<AddLocationScreen> {
   late final TextEditingController _controller;
-  
+
   // Same suggestions as onboarding screen for consistency
   final List<String> locationSuggestions = const [
     'Home',
@@ -44,13 +44,28 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
     super.dispose();
   }
 
-  void _addLocation() {
+  Future<void> _addLocation() async {
     if (_selectedLocation != null && _selectedLocation!.isNotEmpty) {
-      final inventoryProvider = Provider.of<InventoryProvider>(context, listen: false);
-      inventoryProvider.addLocation(_selectedLocation!);
-      
-      // Show success snackbar
+      final inventoryProvider = Provider.of<InventoryProvider>(
+        context,
+        listen: false,
+      );
       final colors = context.appColors;
+
+      try {
+        await inventoryProvider.addLocation(_selectedLocation!);
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add location: $e'),
+            backgroundColor: colors.error,
+          ),
+        );
+        return;
+      }
+
+      // Show success snackbar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Location "${_selectedLocation}" added successfully!'),
@@ -61,14 +76,15 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
           ),
         ),
       );
-      
+
       // Navigate to room creation screen with the selected location
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => RoomCreationScreen(selectedLocation: _selectedLocation!),
+              builder: (context) =>
+                  RoomCreationScreen(selectedLocation: _selectedLocation!),
             ),
           );
         }
@@ -79,7 +95,7 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    
+
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -110,7 +126,8 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                       const SizedBox(height: 40),
                       OnboardingHeader(
                         title: "Let's add a location 📍",
-                        subtitle: "Create a new location to organize your inventory.",
+                        subtitle:
+                            "Create a new location to organize your inventory.",
                       ),
                       const SizedBox(height: 20),
                       TextField(
@@ -138,7 +155,9 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                         ),
                         onChanged: (value) {
                           setState(() {
-                            _selectedLocation = value.trim().isEmpty ? null : value;
+                            _selectedLocation = value.trim().isEmpty
+                                ? null
+                                : value;
                           });
                         },
                       ),
@@ -172,11 +191,15 @@ class _AddLocationScreenState extends State<AddLocationScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _selectedLocation != null && _selectedLocation!.isNotEmpty
-                        ? _addLocation
+                    onPressed:
+                        _selectedLocation != null &&
+                            _selectedLocation!.isNotEmpty
+                        ? () => _addLocation()
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedLocation != null && _selectedLocation!.isNotEmpty
+                      backgroundColor:
+                          _selectedLocation != null &&
+                              _selectedLocation!.isNotEmpty
                           ? colors.primary
                           : colors.primary.withOpacity(0.5),
                       disabledBackgroundColor: colors.primary.withOpacity(0.5),

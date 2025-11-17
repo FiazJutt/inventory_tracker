@@ -91,11 +91,14 @@ class ItemListItem extends StatelessWidget {
                       color: colors.textSecondary,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      container!.name,
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: 13,
+                    Expanded(
+                      child: Text(
+                        container!.name,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -105,11 +108,14 @@ class ItemListItem extends StatelessWidget {
                       color: colors.textSecondary,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      room?.name ?? 'Unknown',
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: 13,
+                    Expanded(
+                      child: Text(
+                        room?.name ?? 'Unknown',
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -123,11 +129,14 @@ class ItemListItem extends StatelessWidget {
                       color: colors.textSecondary,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      room!.name,
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: 13,
+                    Expanded(
+                      child: Text(
+                        room!.name,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -137,11 +146,14 @@ class ItemListItem extends StatelessWidget {
                       color: colors.textSecondary,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      room!.location,
-                      style: TextStyle(
-                        color: colors.textSecondary,
-                        fontSize: 13,
+                    Expanded(
+                      child: Text(
+                        room!.location,
+                        style: TextStyle(
+                          color: colors.textSecondary,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -182,4 +194,3 @@ class ItemListItem extends StatelessWidget {
     );
   }
 }
-

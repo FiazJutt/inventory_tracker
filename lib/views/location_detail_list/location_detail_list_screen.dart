@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
-
-import '../room_detail_screen/room_detail_screen.dart';
+import 'package:inventory_tracker/core/theme/app_colors.dart';
+import 'package:inventory_tracker/views/room_detail_screen/room_detail_screen.dart';
 import 'widgets/location_section_header.dart';
 import 'widgets/location_room_card.dart';
 import 'package:inventory_tracker/views/shared/empty_state.dart';
@@ -11,10 +10,7 @@ import 'package:inventory_tracker/views/shared/empty_state.dart';
 class LocationDetailListScreen extends StatefulWidget {
   final String? location;
 
-  const LocationDetailListScreen({
-    super.key,
-    this.location,
-  });
+  const LocationDetailListScreen({super.key, this.location});
 
   @override
   State<LocationDetailListScreen> createState() => _LocationDetailListScreenState();
@@ -26,29 +22,22 @@ class _LocationDetailListScreenState extends State<LocationDetailListScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+
     return Scaffold(
       extendBody: true,
       appBar: AppBar(
         backgroundColor: colors.background,
         elevation: 0,
+        leading: widget.location != null
+            ? IconButton(
+                icon: Icon(Icons.arrow_back, color: colors.textPrimary),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         title: Text(
           widget.location ?? 'Locations',
           style: TextStyle(color: colors.textPrimary),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.sort, color: colors.textPrimary),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Sort tapped'),
-                  behavior: SnackBarBehavior.floating,
-                  margin: EdgeInsets.only(bottom: 80, left: 16, right: 16),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: Consumer<InventoryProvider>(
         builder: (context, inventoryProvider, _) {
@@ -149,14 +138,26 @@ class _LocationDetailListScreenState extends State<LocationDetailListScreen> {
       itemCount: filteredLocations.length,
       itemBuilder: (context, index) {
         final location = filteredLocations[index].key;
-        final rooms = filteredLocations[index].value;
-
-        return _buildLocationSection(location, rooms);
+        // Apply search filter to rooms within each location
+        final allRooms = filteredLocations[index].value;
+        final filteredRooms = _searchQuery.isEmpty 
+            ? allRooms 
+            : allRooms.where((room) => 
+                room.name.toLowerCase().contains(_searchQuery) ||
+                location.toLowerCase().contains(_searchQuery)
+              ).toList();
+        
+        return _buildLocationSection(location, filteredRooms);
       },
     );
   }
 
   Widget _buildLocationSection(String location, List<dynamic> rooms) {
+    // Don't show sections with no matching rooms
+    if (rooms.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

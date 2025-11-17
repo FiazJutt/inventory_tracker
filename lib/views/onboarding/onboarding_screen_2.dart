@@ -8,14 +8,12 @@ import 'widgets/onboarding_header.dart';
 import 'widgets/location_badge.dart';
 import 'widgets/suggestion_chip.dart';
 import 'widgets/room_counter_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen2 extends StatefulWidget {
   final String locationName;
 
-  const OnboardingScreen2({
-    super.key,
-    required this.locationName,
-  });
+  const OnboardingScreen2({super.key, required this.locationName});
 
   @override
   State<OnboardingScreen2> createState() => _OnboardingScreen2State();
@@ -62,7 +60,7 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
     super.dispose();
   }
 
-  void _saveRoomsAndNavigate() {
+  Future<void> _saveRoomsAndNavigate() async {
     if (addedRooms.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -73,29 +71,47 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
       return;
     }
 
-    final inventoryProvider =
-        Provider.of<InventoryProvider>(context, listen: false);
-
-    addedRooms.forEach((roomName, count) {
-      for (int i = 0; i < count; i++) {
-        final finalRoomName = count > 1 ? '$roomName ${i + 1}' : roomName;
-
-        final room = Room(
-          id: '${DateTime.now().millisecondsSinceEpoch}_$i',
-          name: finalRoomName,
-          location: widget.locationName,
-        );
-
-        inventoryProvider.addRoom(room);
-      }
-    });
-
-    Navigator.pushReplacement(
+    final inventoryProvider = Provider.of<InventoryProvider>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const MainScreen(),
-      ),
+      listen: false,
     );
+
+    try {
+      for (final entry in addedRooms.entries) {
+        for (int i = 0; i < entry.value; i++) {
+          final finalRoomName = entry.value > 1
+              ? '${entry.key} ${i + 1}'
+              : entry.key;
+
+          final room = Room(
+            id: '${DateTime.now().millisecondsSinceEpoch}_$i',
+            name: finalRoomName,
+            location: widget.locationName,
+          );
+
+          await inventoryProvider.addRoom(room);
+        }
+      }
+
+      // Mark app as launched after successful onboarding
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_launched', true);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save rooms: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -245,12 +261,9 @@ class _OnboardingScreen2State extends State<OnboardingScreen2> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  label: const Text(
-                    'Create',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  label: const Text('Create', style: TextStyle(fontSize: 16)),
                   icon: const Icon(Icons.arrow_forward),
-                  onPressed: _saveRoomsAndNavigate,
+                  onPressed: () => _saveRoomsAndNavigate(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.primary,
                     foregroundColor: colors.onPrimary,

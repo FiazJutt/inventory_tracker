@@ -36,6 +36,16 @@ class Room {
     };
   }
 
+  /// Convert to a database-ready map
+  Map<String, dynamic> toDbMap() {
+    return {
+      'id': id,
+      'name': name,
+      'location': location,
+      'created_at': createdAt.millisecondsSinceEpoch,
+    };
+  }
+
   // Create from JSON
   factory Room.fromJson(Map<String, dynamic> json) {
     return Room(
@@ -43,6 +53,16 @@ class Room {
       name: json['name'] as String,
       location: json['location'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  /// Create a [Room] from a database map
+  factory Room.fromDbMap(Map<String, dynamic> map) {
+    return Room(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      location: map['location'] as String,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
     );
   }
 

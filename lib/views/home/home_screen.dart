@@ -7,7 +7,6 @@ import 'package:inventory_tracker/models/container_model.dart';
 import 'package:inventory_tracker/models/item_model.dart';
 
 import '../room_detail_screen/room_detail_screen.dart';
-import '../settings/settings_screen.dart';
 import '../containerItem/detail/container_item_detail_screen.dart';
 import '../location_detail_list/location_detail_list_screen.dart';
 import 'widgets/filter_segment_control.dart';
@@ -95,6 +94,42 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Consumer<InventoryProvider>(
         builder: (context, inventoryProvider, _) {
+          if (inventoryProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (inventoryProvider.errorMessage != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Unable to load inventory',
+                      style: TextStyle(
+                        color: colors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      inventoryProvider.errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: colors.textSecondary),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: inventoryProvider.refreshFromDatabase,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           return Column(
             children: [
               // Filter segment control
@@ -165,7 +200,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).add(
+        const EdgeInsets.only(bottom: 100), // Add padding for bottom navbar
+      ),
       itemCount: rooms.length,
       itemBuilder: (context, index) {
         final room = rooms[index];
@@ -202,7 +239,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).add(
+        const EdgeInsets.only(bottom: 100), // Add padding for bottom navbar
+      ),
       itemCount: containers.length,
       itemBuilder: (context, index) {
         final container = containers[index];
@@ -243,7 +282,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).add(
+        const EdgeInsets.only(bottom: 100), // Add padding for bottom navbar
+      ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
@@ -295,7 +336,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).add(
+        const EdgeInsets.only(bottom: 100), // Add padding for bottom navbar
+      ),
       itemCount: locations.length,
       itemBuilder: (context, index) {
         final location = locations[index];

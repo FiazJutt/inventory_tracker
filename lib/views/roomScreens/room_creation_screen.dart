@@ -67,9 +67,7 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
   Future<void> _selectLocation() async {
     final selectedLocation = await Navigator.push<String>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const LocationSelectionScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const LocationSelectionScreen()),
     );
 
     if (selectedLocation != null && mounted) {
@@ -79,7 +77,7 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
     }
   }
 
-  void _saveRoomsAndNavigate() {
+  Future<void> _saveRoomsAndNavigate() async {
     if (_selectedLocation == null || _selectedLocation!.isEmpty) {
       final colors = context.appColors;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -102,34 +100,50 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
       return;
     }
 
-    final inventoryProvider = Provider.of<InventoryProvider>(context, listen: false);
+    final inventoryProvider = Provider.of<InventoryProvider>(
+      context,
+      listen: false,
+    );
 
-    // Add all rooms to the provider
-    addedRooms.forEach((roomName, count) {
-      for (int i = 0; i < count; i++) {
-        // If count > 1, append number to room name
-        final finalRoomName = count > 1 ? '$roomName ${i + 1}' : roomName;
+    try {
+      for (final entry in addedRooms.entries) {
+        for (int i = 0; i < entry.value; i++) {
+          final finalRoomName = entry.value > 1
+              ? '${entry.key} ${i + 1}'
+              : entry.key;
 
-        final room = Room(
-          id: DateTime.now().millisecondsSinceEpoch.toString() + i.toString(),
-          name: finalRoomName,
-          location: _selectedLocation!,
-        );
+          final room = Room(
+            id: DateTime.now().millisecondsSinceEpoch.toString() + i.toString(),
+            name: finalRoomName,
+            location: _selectedLocation!,
+          );
 
-        inventoryProvider.addRoom(room);
+          await inventoryProvider.addRoom(room);
+        }
       }
-    });
+    } catch (e) {
+      final colors = context.appColors;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save rooms: $e'),
+            backgroundColor: colors.error,
+          ),
+        );
+      }
+      return;
+    }
 
     // Show success message
     final colors = context.appColors;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${addedRooms.length} room${addedRooms.length == 1 ? "" : "s"} added to $_selectedLocation!'),
-          backgroundColor: colors.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+        content: Text(
+          '${addedRooms.length} room${addedRooms.length == 1 ? "" : "s"} added to $_selectedLocation!',
         ),
+        backgroundColor: colors.primary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
 
@@ -185,7 +199,9 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                                   color: colors.surface,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: colors.textSecondary.withOpacity(0.3),
+                                    color: colors.textSecondary.withOpacity(
+                                      0.3,
+                                    ),
                                   ),
                                 ),
                                 child: Row(
@@ -254,7 +270,8 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                               final name = _controller.text.trim();
                               if (name.isNotEmpty) {
                                 setState(() {
-                                  addedRooms[name] = (addedRooms[name] ?? 0) + 1;
+                                  addedRooms[name] =
+                                      (addedRooms[name] ?? 0) + 1;
                                   _controller.clear();
                                 });
                               }
@@ -341,12 +358,14 @@ class _RoomCreationScreenState extends State<RoomCreationScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                      label: Text(
+                    label: Text(
                       'Create',
                       style: TextStyle(fontSize: 16, color: colors.textPrimary),
                     ),
                     icon: Icon(Icons.check, color: colors.textPrimary),
-                    onPressed: _selectedLocation != null ? _saveRoomsAndNavigate : _selectLocation,
+                    onPressed: _selectedLocation != null
+                        ? () => _saveRoomsAndNavigate()
+                        : _selectLocation,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),

@@ -1,14 +1,104 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_tracker/models/room_model.dart';
+import 'package:inventory_tracker/data/repositories/inventory_repository.dart';
 import 'package:inventory_tracker/models/container_model.dart';
 import 'package:inventory_tracker/models/item_model.dart';
+import 'package:inventory_tracker/models/location_model.dart';
+import 'package:inventory_tracker/models/room_model.dart';
+import 'dart:async';
 
 class InventoryProvider with ChangeNotifier {
+  InventoryProvider({InventoryRepository? inventoryRepository})
+    : _inventoryRepository = inventoryRepository ?? InventoryRepository() {
+    // Don't call _loadInitialData here to avoid setState during build
+    // Data loading will be handled by the UI when needed
+  }
+
+  final InventoryRepository _inventoryRepository;
   final List<String> _locations = [];
   final List<Room> _rooms = [];
   final Map<String, List<ContainerModel>> _containers =
       {}; // roomId -> list of ContainerModel objects
   final Map<String, List<Item>> _items = {}; // roomId -> list of Item objects
+  bool _isLoading = false; // Start with false to avoid initial loading state
+  String? _errorMessage;
+  int _idCounter = 0;
+  bool _isInitialized = false;
+
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
+  Future<void> refreshFromDatabase() async {
+    if (!_isInitialized) {
+      _isLoading = true;
+      notifyListeners();
+    }
+    
+    await _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    // Don't call notifyListeners here if we're initializing for the first time
+    // Only set loading state if we're already initialized
+    if (_isInitialized) {
+      _isLoading = true;
+      // Use scheduleMicrotask to avoid calling notifyListeners during build
+      scheduleMicrotask(() {
+        if (hasListeners) {
+          notifyListeners();
+        }
+      });
+    }
+
+    try {
+      final locations = await _inventoryRepository.fetchLocations();
+      final rooms = await _inventoryRepository.fetchRooms();
+      final containers = await _inventoryRepository.fetchContainers();
+      final items = await _inventoryRepository.fetchItems();
+
+      final locationNames = locations.map((loc) => loc.name).toSet();
+      _locations
+        ..clear()
+        ..addAll(locationNames);
+      _locations.sort();
+
+      _rooms
+        ..clear()
+        ..addAll(rooms);
+
+      _containers.clear();
+      _items.clear();
+
+      for (final room in _rooms) {
+        _containers.putIfAbsent(room.id, () => []);
+        _items.putIfAbsent(room.id, () => []);
+        locationNames.add(room.location);
+      }
+
+      for (final container in containers) {
+        _containers.putIfAbsent(container.roomId, () => []);
+        _containers[container.roomId]!.add(container);
+      }
+
+      for (final item in items) {
+        _items.putIfAbsent(item.roomId, () => []);
+        _items[item.roomId]!.add(item);
+      }
+
+      _errorMessage = null;
+      _isInitialized = true;
+    } catch (e, stackTrace) {
+      debugPrint('Error loading inventory data: $e\n$stackTrace');
+      _errorMessage = 'Failed to load inventory data';
+    } finally {
+      _isLoading = false;
+      // Use scheduleMicrotask to avoid calling notifyListeners during build
+      scheduleMicrotask(() {
+        if (hasListeners) {
+          notifyListeners();
+        }
+      });
+    }
+  }
 
   // ==================== GETTERS ====================
 
@@ -51,24 +141,46 @@ class InventoryProvider with ChangeNotifier {
   // ==================== LOCATION METHODS ====================
 
   /// Add a new location
-  void addLocation(String location) {
-    if (location.trim().isNotEmpty && !_locations.contains(location)) {
-      _locations.add(location);
+  Future<void> addLocation(String location) async {
+    final trimmed = location.trim();
+    if (trimmed.isEmpty || _locations.contains(trimmed)) return;
+
+    _locations.add(trimmed);
+    notifyListeners();
+
+    final model = LocationModel(id: _generateId('loc'), name: trimmed);
+
+    try {
+      await _inventoryRepository.upsertLocation(model);
+    } catch (e, stackTrace) {
+      debugPrint('Failed to save location: $e\n$stackTrace');
+      _locations.remove(trimmed);
       notifyListeners();
+      rethrow;
     }
   }
 
   /// Remove a location (and all its rooms)
-  void removeLocation(String location) {
-    _locations.remove(location);
-    // Remove all rooms in this location
+  Future<void> removeLocation(String location) async {
     final roomsToRemove = _rooms
         .where((room) => room.location == location)
         .toList();
-    for (var room in roomsToRemove) {
-      removeRoom(room.id);
+
+    _locations.remove(location);
+    for (final room in roomsToRemove) {
+      _rooms.removeWhere((r) => r.id == room.id);
+      _containers.remove(room.id);
+      _items.remove(room.id);
     }
     notifyListeners();
+
+    try {
+      await _inventoryRepository.deleteLocationByName(location);
+    } catch (e, stackTrace) {
+      debugPrint('Failed to delete location: $e\n$stackTrace');
+      await _loadInitialData();
+      rethrow;
+    }
   }
 
   /// Check if location exists
@@ -79,61 +191,142 @@ class InventoryProvider with ChangeNotifier {
   // ==================== ROOM METHODS ====================
 
   /// Add a new room
-  void addRoom(Room room) {
+  Future<void> addRoom(Room room) async {
+    final isNewLocation = !_locations.contains(room.location);
+
     _rooms.add(room);
     _containers[room.id] = [];
     _items[room.id] = [];
 
-    // Also add location if it doesn't exist
-    if (!_locations.contains(room.location)) {
+    if (isNewLocation) {
       _locations.add(room.location);
     }
 
     notifyListeners();
+
+    try {
+      if (isNewLocation) {
+        final locationModel = LocationModel(
+          id: _generateId('loc'),
+          name: room.location,
+        );
+        await _inventoryRepository.upsertLocation(locationModel);
+      }
+      await _inventoryRepository.upsertRoom(room);
+    } catch (e, stackTrace) {
+      debugPrint('Failed to add room: $e\n$stackTrace');
+      _rooms.removeWhere((r) => r.id == room.id);
+      _containers.remove(room.id);
+      _items.remove(room.id);
+      if (isNewLocation) {
+        _locations.remove(room.location);
+      }
+      notifyListeners();
+      rethrow;
+    }
   }
 
   /// Add multiple rooms at once (useful for onboarding)
-  void addRooms(List<Room> rooms) {
+  Future<void> addRooms(List<Room> rooms) async {
     for (var room in rooms) {
-      _rooms.add(room);
-      _containers[room.id] = [];
-      _items[room.id] = [];
-
-      if (!_locations.contains(room.location)) {
-        _locations.add(room.location);
-      }
+      await addRoom(room);
     }
-    notifyListeners();
   }
 
   /// Update a room
-  void updateRoom(Room updatedRoom) {
+  Future<void> updateRoom(Room updatedRoom) async {
     final index = _rooms.indexWhere((room) => room.id == updatedRoom.id);
-    if (index != -1) {
-      final oldLocation = _rooms[index].location;
-      _rooms[index] = updatedRoom;
+    if (index == -1) return;
 
-      // Update location if changed
-      if (oldLocation != updatedRoom.location) {
-        if (!_locations.contains(updatedRoom.location)) {
-          _locations.add(updatedRoom.location);
+    final previousRoom = _rooms[index];
+    final oldLocation = previousRoom.location;
+    final locationChanged = oldLocation != updatedRoom.location;
+    var addedLocation = false;
+
+    _rooms[index] = updatedRoom;
+
+    if (locationChanged) {
+      if (!_locations.contains(updatedRoom.location)) {
+        _locations.add(updatedRoom.location);
+        addedLocation = true;
+      }
+
+      if (!_rooms.any(
+        (room) => room.id != updatedRoom.id && room.location == oldLocation,
+      )) {
+        _locations.remove(oldLocation);
+      }
+    }
+
+    notifyListeners();
+
+    try {
+      if (locationChanged && addedLocation) {
+        final locationModel = LocationModel(
+          id: _generateId('loc'),
+          name: updatedRoom.location,
+        );
+        await _inventoryRepository.upsertLocation(locationModel);
+      }
+
+      await _inventoryRepository.upsertRoom(updatedRoom);
+
+      if (locationChanged) {
+        final isOldLocationUsed = _rooms.any(
+          (room) => room.location == oldLocation,
+        );
+        if (!isOldLocationUsed) {
+          await _inventoryRepository.deleteLocationByName(oldLocation);
         }
-        // Remove old location if no other rooms use it
-        if (!_rooms.any((room) => room.location == oldLocation)) {
-          _locations.remove(oldLocation);
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Failed to update room: $e\n$stackTrace');
+      _rooms[index] = previousRoom;
+
+      if (locationChanged) {
+        if (addedLocation) {
+          _locations.remove(updatedRoom.location);
+        }
+        if (!_locations.contains(oldLocation)) {
+          _locations.add(oldLocation);
         }
       }
 
       notifyListeners();
+      rethrow;
     }
   }
 
   /// Remove a room and all its containers/items
-  void removeRoom(String roomId) {
-    _rooms.removeWhere((room) => room.id == roomId);
+  Future<void> removeRoom(String roomId) async {
+    final roomIndex = _rooms.indexWhere((room) => room.id == roomId);
+    if (roomIndex == -1) return;
+
+    final room = _rooms[roomIndex];
+    final location = room.location;
+
+    _rooms.removeAt(roomIndex);
     _containers.remove(roomId);
     _items.remove(roomId);
+
+    var removedLocation = false;
+    if (!_rooms.any((r) => r.location == location)) {
+      _locations.remove(location);
+      removedLocation = true;
+    }
+
     notifyListeners();
+
+    try {
+      await _inventoryRepository.deleteRoom(roomId);
+      if (removedLocation) {
+        await _inventoryRepository.deleteLocationByName(location);
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Failed to delete room: $e\n$stackTrace');
+      await _loadInitialData();
+      rethrow;
+    }
   }
 
   /// Get room by ID
@@ -153,7 +346,7 @@ class InventoryProvider with ChangeNotifier {
   // ==================== CONTAINER METHODS ====================
 
   /// Add a container to a room
-  void addContainer(
+  Future<ContainerModel?> addContainer(
     String roomId,
     String containerName, {
     String? serialNumber,
@@ -169,16 +362,13 @@ class InventoryProvider with ChangeNotifier {
     String? brand,
     String? model,
     String? searchMetadata,
-  }) {
-    if (containerName.trim().isEmpty) return;
+  }) async {
+    if (containerName.trim().isEmpty) return null;
 
-    // Ensure the room exists in the containers map
-    if (!_containers.containsKey(roomId)) {
-      _containers[roomId] = [];
-    }
+    _containers.putIfAbsent(roomId, () => []);
 
     final container = ContainerModel(
-      id: '${DateTime.now().millisecondsSinceEpoch}_${_containers[roomId]!.length}',
+      id: _generateId('con'),
       name: containerName,
       roomId: roomId,
       serialNumber: serialNumber,
@@ -198,35 +388,87 @@ class InventoryProvider with ChangeNotifier {
 
     _containers[roomId]!.add(container);
     notifyListeners();
+
+    try {
+      await _inventoryRepository.upsertContainer(container);
+      return container;
+    } catch (e, stackTrace) {
+      debugPrint('Failed to add container: $e\n$stackTrace');
+      _containers[roomId]!.removeWhere((c) => c.id == container.id);
+      notifyListeners();
+      rethrow;
+    }
   }
 
   /// Update a container
-  void updateContainer(String roomId, ContainerModel updatedContainer) {
+  Future<void> updateContainer(
+    String roomId,
+    ContainerModel updatedContainer,
+  ) async {
     final containers = _containers[roomId];
-    if (containers != null) {
-      final index = containers.indexWhere((c) => c.id == updatedContainer.id);
-      if (index != -1) {
-        containers[index] = updatedContainer;
-        notifyListeners();
-      }
+    if (containers == null) return;
+
+    final index = containers.indexWhere((c) => c.id == updatedContainer.id);
+    if (index == -1) return;
+
+    final previous = containers[index];
+    containers[index] = updatedContainer;
+    notifyListeners();
+
+    try {
+      await _inventoryRepository.updateContainer(updatedContainer);
+    } catch (e, stackTrace) {
+      debugPrint('Failed to update container: $e\n$stackTrace');
+      containers[index] = previous;
+      notifyListeners();
+      rethrow;
     }
   }
 
   /// Remove a container by ID
-  void removeContainerById(String roomId, String containerId) {
+  Future<void> removeContainerById(String roomId, String containerId) async {
     final containers = _containers[roomId];
-    if (containers != null) {
-      containers.removeWhere((c) => c.id == containerId);
+    if (containers == null) return;
+
+    final containerIndex = containers.indexWhere((c) => c.id == containerId);
+    if (containerIndex == -1) return;
+
+    final removedContainer = containers.removeAt(containerIndex);
+    notifyListeners();
+
+    try {
+      await _inventoryRepository.deleteContainer(containerId);
+
+      final items = _items[roomId];
+      if (items != null) {
+        for (var i = 0; i < items.length; i++) {
+          final item = items[i];
+          if (item.containerId == containerId) {
+            items[i] = item.copyWith(containerId: null);
+          }
+        }
+        notifyListeners();
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Failed to delete container: $e\n$stackTrace');
+      containers.insert(containerIndex, removedContainer);
       notifyListeners();
+      rethrow;
     }
   }
 
   /// Remove a container by name (legacy support)
-  void removeContainer(String roomId, String containerName) {
+  Future<void> removeContainer(String roomId, String containerName) async {
     final containers = _containers[roomId];
-    if (containers != null) {
-      containers.removeWhere((c) => c.name == containerName);
-      notifyListeners();
+    if (containers == null) return;
+
+    final idsToRemove = containers
+        .where((c) => c.name == containerName)
+        .map((c) => c.id)
+        .toList();
+
+    for (final id in idsToRemove) {
+      await removeContainerById(roomId, id);
     }
   }
 
@@ -251,7 +493,7 @@ class InventoryProvider with ChangeNotifier {
   // ==================== ITEM METHODS ====================
 
   /// Add an item to a room
-  void addItem(
+  Future<Item?> addItem(
     String roomId,
     String itemName, {
     String? containerId,
@@ -269,16 +511,13 @@ class InventoryProvider with ChangeNotifier {
     String? brand,
     String? model,
     String? searchMetadata,
-  }) {
-    if (itemName.trim().isEmpty) return;
+  }) async {
+    if (itemName.trim().isEmpty) return null;
 
-    // Ensure the room exists in the items map
-    if (!_items.containsKey(roomId)) {
-      _items[roomId] = [];
-    }
+    _items.putIfAbsent(roomId, () => []);
 
     final item = Item(
-      id: '${DateTime.now().millisecondsSinceEpoch}_${_items[roomId]!.length}',
+      id: _generateId('item'),
       name: itemName,
       roomId: roomId,
       containerId: containerId,
@@ -300,35 +539,73 @@ class InventoryProvider with ChangeNotifier {
 
     _items[roomId]!.add(item);
     notifyListeners();
+
+    try {
+      await _inventoryRepository.upsertItem(item);
+      return item;
+    } catch (e, stackTrace) {
+      debugPrint('Failed to add item: $e\n$stackTrace');
+      _items[roomId]!.removeWhere((i) => i.id == item.id);
+      notifyListeners();
+      rethrow;
+    }
   }
 
   /// Update an item
-  void updateItem(String roomId, Item updatedItem) {
+  Future<void> updateItem(String roomId, Item updatedItem) async {
     final items = _items[roomId];
-    if (items != null) {
-      final index = items.indexWhere((i) => i.id == updatedItem.id);
-      if (index != -1) {
-        items[index] = updatedItem;
-        notifyListeners();
-      }
+    if (items == null) return;
+
+    final index = items.indexWhere((i) => i.id == updatedItem.id);
+    if (index == -1) return;
+
+    final previous = items[index];
+    items[index] = updatedItem;
+    notifyListeners();
+
+    try {
+      await _inventoryRepository.updateItem(updatedItem);
+    } catch (e, stackTrace) {
+      debugPrint('Failed to update item: $e\n$stackTrace');
+      items[index] = previous;
+      notifyListeners();
+      rethrow;
     }
   }
 
   /// Remove an item by ID
-  void removeItemById(String roomId, String itemId) {
+  Future<void> removeItemById(String roomId, String itemId) async {
     final items = _items[roomId];
-    if (items != null) {
-      items.removeWhere((i) => i.id == itemId);
+    if (items == null) return;
+
+    final index = items.indexWhere((i) => i.id == itemId);
+    if (index == -1) return;
+
+    final removedItem = items.removeAt(index);
+    notifyListeners();
+
+    try {
+      await _inventoryRepository.deleteItem(itemId);
+    } catch (e, stackTrace) {
+      debugPrint('Failed to delete item: $e\n$stackTrace');
+      items.insert(index, removedItem);
       notifyListeners();
+      rethrow;
     }
   }
 
   /// Remove an item by name (legacy support)
-  void removeItem(String roomId, String itemName) {
+  Future<void> removeItem(String roomId, String itemName) async {
     final items = _items[roomId];
-    if (items != null) {
-      items.removeWhere((i) => i.name == itemName);
-      notifyListeners();
+    if (items == null) return;
+
+    final idsToRemove = items
+        .where((i) => i.name == itemName)
+        .map((i) => i.id)
+        .toList();
+
+    for (final id in idsToRemove) {
+      await removeItemById(roomId, id);
     }
   }
 
@@ -371,108 +648,130 @@ class InventoryProvider with ChangeNotifier {
     return getContainerItems(roomId, containerId).length;
   }
 
-
   // Add these methods to your InventoryProvider class
 
-// ==================== MOVE METHODS ====================
+  // ==================== MOVE METHODS ====================
 
-/// Move an item to a different room or container
-void moveItem({
-  required String currentRoomId,
-  required String itemId,
-  required String targetRoomId,
-  String? targetContainerId,
-}) {
-  // Find the item in current room
-  final items = _items[currentRoomId];
-  if (items == null) return;
-  
-  final itemIndex = items.indexWhere((item) => item.id == itemId);
-  if (itemIndex == -1) return;
-  
-  final item = items[itemIndex];
-  
-  // Create updated item with new location
-  final updatedItem = item.copyWith(
-    roomId: targetRoomId,
-    containerId: targetContainerId,
-  );
-  
-  // Remove from current room
-  items.removeAt(itemIndex);
-  
-  // Add to target room
-  if (!_items.containsKey(targetRoomId)) {
-    _items[targetRoomId] = [];
-  }
-  _items[targetRoomId]!.add(updatedItem);
-  
-  notifyListeners();
-}
+  /// Move an item to a different room or container
+  Future<void> moveItem({
+    required String currentRoomId,
+    required String itemId,
+    required String targetRoomId,
+    String? targetContainerId,
+  }) async {
+    final items = _items[currentRoomId];
+    if (items == null) return;
 
-/// Move a container (and all its items) to a different room
-void moveContainer({
-  required String currentRoomId,
-  required String containerId,
-  required String targetRoomId,
-}) {
-  // Find the container in current room
-  final containers = _containers[currentRoomId];
-  if (containers == null) return;
-  
-  final containerIndex = containers.indexWhere((c) => c.id == containerId);
-  if (containerIndex == -1) return;
-  
-  final container = containers[containerIndex];
-  
-  // Create updated container with new room
-  final updatedContainer = container.copyWith(roomId: targetRoomId);
-  
-  // Remove from current room
-  containers.removeAt(containerIndex);
-  
-  // Add to target room
-  if (!_containers.containsKey(targetRoomId)) {
-    _containers[targetRoomId] = [];
-  }
-  _containers[targetRoomId]!.add(updatedContainer);
-  
-  // Move all items in this container to the new room
-  final items = _items[currentRoomId];
-  if (items != null) {
-    final itemsToMove = items.where((item) => item.containerId == containerId).toList();
-    
-    for (var item in itemsToMove) {
-      items.remove(item);
-      final updatedItem = item.copyWith(roomId: targetRoomId);
-      
-      if (!_items.containsKey(targetRoomId)) {
-        _items[targetRoomId] = [];
-      }
-      _items[targetRoomId]!.add(updatedItem);
+    final itemIndex = items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) return;
+
+    final item = items.removeAt(itemIndex);
+
+    final updatedItem = item.copyWith(
+      roomId: targetRoomId,
+      containerId: targetContainerId,
+    );
+
+    _items.putIfAbsent(targetRoomId, () => []);
+    _items[targetRoomId]!.add(updatedItem);
+
+    notifyListeners();
+
+    try {
+      await _inventoryRepository.moveItem(
+        itemId: itemId,
+        newRoomId: targetRoomId,
+        newContainerId: targetContainerId,
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Failed to move item: $e\n$stackTrace');
+      _items[targetRoomId]!.removeWhere((i) => i.id == updatedItem.id);
+      items.insert(itemIndex, item);
+      notifyListeners();
+      rethrow;
     }
   }
-  
-  notifyListeners();
-}
 
-/// Get item location info (room and optional container)
-Map<String, dynamic> getItemLocation(String roomId, String itemId) {
-  final item = getItemById(roomId, itemId);
-  if (item == null) return {};
-  
-  final room = getRoomById(roomId);
-  ContainerModel? container;
-  
-  if (item.containerId != null) {
-    container = getContainerById(roomId, item.containerId!);
+  /// Move a container (and all its items) to a different room
+  Future<void> moveContainer({
+    required String currentRoomId,
+    required String containerId,
+    required String targetRoomId,
+  }) async {
+    final containers = _containers[currentRoomId];
+    if (containers == null) return;
+
+    final containerIndex = containers.indexWhere((c) => c.id == containerId);
+    if (containerIndex == -1) return;
+
+    final container = containers.removeAt(containerIndex);
+    final updatedContainer = container.copyWith(roomId: targetRoomId);
+
+    _containers.putIfAbsent(targetRoomId, () => []);
+    _containers[targetRoomId]!.add(updatedContainer);
+
+    final currentRoomItems = _items[currentRoomId];
+    _items.putIfAbsent(targetRoomId, () => []);
+    final targetRoomItems = _items[targetRoomId]!;
+
+    final itemsToMove = <Item>[];
+    if (currentRoomItems != null) {
+      final matchingItems = currentRoomItems.where(
+        (item) => item.containerId == containerId,
+      );
+      for (final item in matchingItems.toList()) {
+        currentRoomItems.remove(item);
+        final updatedItem = item.copyWith(roomId: targetRoomId);
+        itemsToMove.add(updatedItem);
+        targetRoomItems.add(updatedItem);
+      }
+    }
+
+    notifyListeners();
+
+    try {
+      await _inventoryRepository.updateContainer(updatedContainer);
+
+      await Future.wait(
+        itemsToMove.map(
+          (item) => _inventoryRepository.moveItem(
+            itemId: item.id,
+            newRoomId: targetRoomId,
+            newContainerId: item.containerId,
+          ),
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('Failed to move container: $e\n$stackTrace');
+      _containers[targetRoomId]!.removeWhere((c) => c.id == containerId);
+      _containers.putIfAbsent(currentRoomId, () => []);
+      _containers[currentRoomId]!.insert(containerIndex, container);
+
+      _items.putIfAbsent(currentRoomId, () => []);
+      for (final item in itemsToMove) {
+        _items[targetRoomId]!.removeWhere((i) => i.id == item.id);
+        _items[currentRoomId]!.add(item.copyWith(roomId: currentRoomId));
+      }
+
+      notifyListeners();
+      rethrow;
+    }
   }
-  
-  return {
-    'room': room,
-    'container': container,
-  };
-}
+
+  /// Get item location info (room and optional container)
+  Map<String, dynamic> getItemLocation(String roomId, String itemId) {
+    final item = getItemById(roomId, itemId);
+    if (item == null) return {};
+
+    final room = getRoomById(roomId);
+    ContainerModel? container;
+
+    if (item.containerId != null) {
+      container = getContainerById(roomId, item.containerId!);
+    }
+
+    return {'room': room, 'container': container};
+  }
 
   // ==================== SEARCH METHODS ====================
 
@@ -712,5 +1011,11 @@ Map<String, dynamic> getItemLocation(String roomId, String itemId) {
     } catch (e) {
       debugPrint('Error importing data: $e');
     }
+  }
+
+  String _generateId(String prefix) {
+    _idCounter++;
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return '${prefix}_${timestamp}_$_idCounter';
   }
 }

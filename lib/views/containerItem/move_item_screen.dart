@@ -71,15 +71,32 @@ class _MoveItemScreenState extends State<MoveItemScreen> {
       _isLoading = true;
     });
 
-    final inventoryProvider = Provider.of<InventoryProvider>(context, listen: false);
-
-    // Perform the move
-    inventoryProvider.moveItem(
-      currentRoomId: widget.currentRoomId,
-      itemId: widget.item.id,
-      targetRoomId: _selectedRoom!.id,
-      targetContainerId: _selectedContainer?.id,
+    final inventoryProvider = Provider.of<InventoryProvider>(
+      context,
+      listen: false,
     );
+
+    try {
+      await inventoryProvider.moveItem(
+        currentRoomId: widget.currentRoomId,
+        itemId: widget.item.id,
+        targetRoomId: _selectedRoom!.id,
+        targetContainerId: _selectedContainer?.id,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to move item: $e'),
+            backgroundColor: colors.error,
+          ),
+        );
+      }
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = false;
@@ -149,10 +166,7 @@ class _MoveItemScreenState extends State<MoveItemScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'Select destination room:',
-            style: TextStyle(
-              color: colors.textSecondary,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: colors.textSecondary, fontSize: 14),
           ),
         ),
         const SizedBox(height: 12),
@@ -189,7 +203,9 @@ class _MoveItemScreenState extends State<MoveItemScreen> {
                 itemCount: filteredRooms.length,
                 itemBuilder: (context, index) {
                   final room = filteredRooms[index];
-                  final containerCount = inventoryProvider.getContainers(room.id).length;
+                  final containerCount = inventoryProvider
+                      .getContainers(room.id)
+                      .length;
 
                   return RoomListItem(
                     room: room,
@@ -224,10 +240,7 @@ class _MoveItemScreenState extends State<MoveItemScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'Select destination:',
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: colors.textSecondary, fontSize: 14),
               ),
             ),
             const SizedBox(height: 12),
@@ -262,38 +275,40 @@ class _MoveItemScreenState extends State<MoveItemScreen> {
             Expanded(
               child: containers.isEmpty
                   ? Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text(
-                    'No containers in this room.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              )
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text(
+                          'No containers in this room.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: colors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    )
                   : ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: containers.length,
-                itemBuilder: (context, index) {
-                  final container = containers[index];
-                  final itemCount = inventoryProvider.getContainerItemCount(
-                    _selectedRoom!.id,
-                    container.id,
-                  );
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: containers.length,
+                      itemBuilder: (context, index) {
+                        final container = containers[index];
+                        final itemCount = inventoryProvider
+                            .getContainerItemCount(
+                              _selectedRoom!.id,
+                              container.id,
+                            );
 
-                  return ContainerListItem(
-                    container: container,
-                    isSelected: _selectedContainer?.id == container.id,
-                    isCurrentLocation: isSameRoom &&
-                        widget.item.containerId == container.id,
-                    itemCount: itemCount,
-                    onTap: () => _onContainerSelected(container),
-                  );
-                },
-              ),
+                        return ContainerListItem(
+                          container: container,
+                          isSelected: _selectedContainer?.id == container.id,
+                          isCurrentLocation:
+                              isSameRoom &&
+                              widget.item.containerId == container.id,
+                          itemCount: itemCount,
+                          onTap: () => _onContainerSelected(container),
+                        );
+                      },
+                    ),
             ),
 
             // Move button
@@ -312,21 +327,21 @@ class _MoveItemScreenState extends State<MoveItemScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.black,
-                      strokeWidth: 2,
-                    ),
-                  )
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        )
                       : const Text(
-                    'Move Item',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
+                          'Move Item',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
                 ),
               ),
             ),

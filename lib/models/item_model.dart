@@ -62,6 +62,7 @@ class Item {
     String? brand,
     String? model,
     String? searchMetadata,
+    DateTime? createdAt,
   }) {
     return Item(
       id: id ?? this.id,
@@ -82,6 +83,7 @@ class Item {
       brand: brand ?? this.brand,
       model: model ?? this.model,
       searchMetadata: searchMetadata ?? this.searchMetadata,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -134,4 +136,71 @@ class Item {
         ? DateTime.parse(json['createdAt'])
         : DateTime.now(),
   );
+
+  Map<String, dynamic> toDbMap() {
+    return {
+      'id': id,
+      'name': name,
+      'room_id': roomId,
+      'container_id': containerId,
+      'quantity': quantity,
+      'serial_number': serialNumber,
+      'notes': notes,
+      'description': description,
+      'purchase_price': purchasePrice,
+      'purchase_date': purchaseDate?.millisecondsSinceEpoch,
+      'current_value': currentValue,
+      'current_condition': currentCondition,
+      'expiration_date': expirationDate?.millisecondsSinceEpoch,
+      'weight': weight,
+      'retailer': retailer,
+      'brand': brand,
+      'model': model,
+      'search_metadata': searchMetadata,
+      'created_at': createdAt.millisecondsSinceEpoch,
+    };
+  }
+
+  factory Item.fromDbMap(Map<String, dynamic> map) {
+    DateTime? parseDate(dynamic value) {
+      if (value == null) return null;
+      if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      if (value is String) {
+        return DateTime.tryParse(value);
+      }
+      return null;
+    }
+
+    double? asDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString());
+    }
+
+    return Item(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      roomId: map['room_id'] as String,
+      containerId: map['container_id'] as String?,
+      quantity: (map['quantity'] as int?) ?? 1,
+      serialNumber: map['serial_number'] as String?,
+      notes: map['notes'] as String?,
+      description: map['description'] as String?,
+      purchasePrice: asDouble(map['purchase_price']),
+      purchaseDate: parseDate(map['purchase_date']),
+      currentValue: asDouble(map['current_value']),
+      currentCondition: map['current_condition'] as String?,
+      expirationDate: parseDate(map['expiration_date']),
+      weight: asDouble(map['weight']),
+      retailer: map['retailer'] as String?,
+      brand: map['brand'] as String?,
+      model: map['model'] as String?,
+      searchMetadata: map['search_metadata'] as String?,
+      createdAt: parseDate(map['created_at']) ?? DateTime.now(),
+    );
+  }
 }

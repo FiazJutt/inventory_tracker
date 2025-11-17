@@ -62,6 +62,8 @@ class _FloatingNavbarState extends State<FloatingNavbar>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors; // Use theme-aware colors
+    
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -88,9 +90,9 @@ class _FloatingNavbarState extends State<FloatingNavbar>
             child: Container(
               height: 66,
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant.withOpacity(0.95),
+                color: colors.surfaceVariant.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(40),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: colors.textPrimary.withOpacity(0.1)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.25),
@@ -174,14 +176,14 @@ class _FloatingNavbarState extends State<FloatingNavbar>
               ],
               FloatingActionButton(
                 onPressed: _toggleFab,
-                backgroundColor: AppColors.primary,
+                backgroundColor: colors.primary,
                 elevation: _isFabExpanded ? 8 : 4,
                 child: AnimatedRotation(
                   duration: const Duration(milliseconds: 300),
                   turns: _isFabExpanded ? 0.125 : 0,
                   child: Icon(
                     _isFabExpanded ? Icons.close : Icons.add,
-                    color: AppColors.onPrimary,
+                    color: colors.onPrimary,
                   ),
                 ),
               ),
@@ -193,6 +195,8 @@ class _FloatingNavbarState extends State<FloatingNavbar>
   }
 
   Widget _buildAddOption(String label, IconData icon, VoidCallback onTap) {
+    final colors = context.appColors; // Use theme-aware colors
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -205,9 +209,9 @@ class _FloatingNavbarState extends State<FloatingNavbar>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant.withOpacity(0.95),
+            color: colors.surfaceVariant.withOpacity(0.95),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: colors.textPrimary.withOpacity(0.1)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.15),
@@ -219,12 +223,12 @@ class _FloatingNavbarState extends State<FloatingNavbar>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 20, color: AppColors.primary),
+              Icon(icon, size: 20, color: colors.primary),
               const SizedBox(width: 10),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.primary,
+                style: TextStyle(
+                  color: colors.primary,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -242,7 +246,9 @@ class _FloatingNavbarState extends State<FloatingNavbar>
     IconData icon,
     String label,
   ) {
+    final colors = context.appColors; // Use theme-aware colors
     final isSelected = widget.selectedIndex == index;
+    
     return InkWell(
       onTap: () {
         widget.onTabSelected(index);
@@ -258,15 +264,15 @@ class _FloatingNavbarState extends State<FloatingNavbar>
             Icon(
               icon,
               color: isSelected
-                  ? AppColors.primary
-                  : Colors.white.withOpacity(0.7),
+                  ? colors.primary
+                  : colors.textPrimary.withOpacity(0.7),
               size: isSelected ? 26 : 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.primary : Colors.white70,
+                color: isSelected ? colors.primary : colors.textPrimary.withOpacity(0.7),
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

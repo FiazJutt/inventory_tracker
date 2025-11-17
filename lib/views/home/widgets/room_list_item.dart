@@ -58,11 +58,14 @@ class RoomListItem extends StatelessWidget {
                 color: colors.textSecondary,
               ),
               const SizedBox(width: 4),
-              Text(
-                room.location,
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 13,
+              Expanded(
+                child: Text(
+                  room.location,
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -88,4 +91,3 @@ class RoomListItem extends StatelessWidget {
     );
   }
 }
-

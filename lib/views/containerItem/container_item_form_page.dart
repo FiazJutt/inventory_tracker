@@ -114,7 +114,6 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
     }
   }
 
-
   Future<void> _addContainer() async {
     final colors = context.appColors;
     if (_formKey.currentState!.validate()) {
@@ -123,58 +122,78 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
       });
 
       final containerName = _containerNameController.text.trim();
-      final inventoryProvider = Provider.of<InventoryProvider>(context, listen: false);
+      final inventoryProvider = Provider.of<InventoryProvider>(
+        context,
+        listen: false,
+      );
 
-      if (widget.isAddItemScreen) {
-        inventoryProvider.addItem(
-          widget.room.id,
-          containerName,
-          containerId: widget.container?.id, // NEW: pass container ID
-          quantity: _quantity,
-          serialNumber: _serialNumberController.text.trim(),
-          notes: _notesController.text.trim(),
-          description: _descriptionController.text.trim(),
-          purchasePrice: _purchasePriceController.text.trim().isNotEmpty
-              ? double.tryParse(_purchasePriceController.text.trim())
-              : null,
-          purchaseDate: _purchaseDate,
-          currentValue: _currentValueController.text.trim().isNotEmpty
-              ? double.tryParse(_currentValueController.text.trim())
-              : null,
-          currentCondition: _currentCondition,
-          expirationDate: _expirationDate,
-          weight: _weightController.text.trim().isNotEmpty
-              ? double.tryParse(_weightController.text.trim())
-              : null,
-          retailer: _retailerController.text.trim(),
-          brand: _brandController.text.trim(),
-          model: _modelController.text.trim(),
-          searchMetadata: _searchMetadataController.text.trim(),
-        );
-      } else {
-        inventoryProvider.addContainer(
-          widget.room.id,
-          containerName,
-          serialNumber: _serialNumberController.text.trim(),
-          notes: _notesController.text.trim(),
-          description: _descriptionController.text.trim(),
-          purchasePrice: _purchasePriceController.text.trim().isNotEmpty
-              ? double.tryParse(_purchasePriceController.text.trim())
-              : null,
-          purchaseDate: _purchaseDate,
-          currentValue: _currentValueController.text.trim().isNotEmpty
-              ? double.tryParse(_currentValueController.text.trim())
-              : null,
-          currentCondition: _currentCondition,
-          expirationDate: _expirationDate,
-          weight: _weightController.text.trim().isNotEmpty
-              ? double.tryParse(_weightController.text.trim())
-              : null,
-          retailer: _retailerController.text.trim(),
-          brand: _brandController.text.trim(),
-          model: _modelController.text.trim(),
-          searchMetadata: _searchMetadataController.text.trim(),
-        );
+      try {
+        if (widget.isAddItemScreen) {
+          await inventoryProvider.addItem(
+            widget.room.id,
+            containerName,
+            containerId: widget.container?.id,
+            quantity: _quantity,
+            serialNumber: _serialNumberController.text.trim(),
+            notes: _notesController.text.trim(),
+            description: _descriptionController.text.trim(),
+            purchasePrice: _purchasePriceController.text.trim().isNotEmpty
+                ? double.tryParse(_purchasePriceController.text.trim())
+                : null,
+            purchaseDate: _purchaseDate,
+            currentValue: _currentValueController.text.trim().isNotEmpty
+                ? double.tryParse(_currentValueController.text.trim())
+                : null,
+            currentCondition: _currentCondition,
+            expirationDate: _expirationDate,
+            weight: _weightController.text.trim().isNotEmpty
+                ? double.tryParse(_weightController.text.trim())
+                : null,
+            retailer: _retailerController.text.trim(),
+            brand: _brandController.text.trim(),
+            model: _modelController.text.trim(),
+            searchMetadata: _searchMetadataController.text.trim(),
+          );
+        } else {
+          await inventoryProvider.addContainer(
+            widget.room.id,
+            containerName,
+            serialNumber: _serialNumberController.text.trim(),
+            notes: _notesController.text.trim(),
+            description: _descriptionController.text.trim(),
+            purchasePrice: _purchasePriceController.text.trim().isNotEmpty
+                ? double.tryParse(_purchasePriceController.text.trim())
+                : null,
+            purchaseDate: _purchaseDate,
+            currentValue: _currentValueController.text.trim().isNotEmpty
+                ? double.tryParse(_currentValueController.text.trim())
+                : null,
+            currentCondition: _currentCondition,
+            expirationDate: _expirationDate,
+            weight: _weightController.text.trim().isNotEmpty
+                ? double.tryParse(_weightController.text.trim())
+                : null,
+            retailer: _retailerController.text.trim(),
+            brand: _brandController.text.trim(),
+            model: _modelController.text.trim(),
+            searchMetadata: _searchMetadataController.text.trim(),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Failed to save ${widget.isAddItemScreen ? 'item' : 'container'}: $e',
+              ),
+              backgroundColor: colors.error,
+            ),
+          );
+        }
+        setState(() {
+          _isLoading = false;
+        });
+        return;
       }
 
       setState(() {
@@ -213,7 +232,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-      return Scaffold(
+    return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: colors.background,
@@ -263,7 +282,7 @@ class _ContainerItemFormPageState extends State<ContainerItemFormPage> {
                       required: true,
                     ),
 
-                   // Show quantity field only when opened from Add Item screen
+                    // Show quantity field only when opened from Add Item screen
                     if (widget.isAddItemScreen) ...[
                       const SizedBox(height: 16),
                       CustomQuantityField(
