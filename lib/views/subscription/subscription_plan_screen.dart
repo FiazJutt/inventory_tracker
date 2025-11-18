@@ -9,7 +9,6 @@ class SubscriptionPlanScreen extends StatefulWidget {
 }
 
 class _SubscriptionPlanScreenState extends State<SubscriptionPlanScreen> {
-  bool _isYearly = true;
   bool _isFreeTrial = true;
   int _selectedPlan = 1; // 0 for lifetime, 1 for monthly
 

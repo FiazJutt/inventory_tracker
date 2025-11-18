@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 
-class LocationSearchBar extends StatelessWidget {
+class UniversalSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final Function(String) onChanged;
 
-  const LocationSearchBar({
+  const UniversalSearchBar({
     super.key,
     required this.controller,
     required this.hintText,
