@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_tracker/views/containerItem/detail/container_item_detail_screen.dart';
+import 'package:inventory_tracker/views/containerItem_detail/container_item_detail_screen.dart';
 import 'package:inventory_tracker/views/containerItem/move_item_screen.dart'; // ADD THIS IMPORT
 import 'package:inventory_tracker/views/room_detail_screen/tabs/container_tab.dart';
 import 'package:inventory_tracker/views/room_detail_screen/tabs/item_tab.dart';

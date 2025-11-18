@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/views/roomScreens/room_creation_screen.dart';
 import 'package:inventory_tracker/views/onboarding/widgets/onboarding_header.dart';
-import 'package:inventory_tracker/views/onboarding/widgets/suggestion_chip.dart';
+import 'package:inventory_tracker/core/widgets/suggestion_chip.dart';
 
 class AddLocationScreen extends StatefulWidget {
   const AddLocationScreen({super.key});

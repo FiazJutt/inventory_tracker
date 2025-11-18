@@ -6,7 +6,7 @@ import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
 import 'package:inventory_tracker/views/onboarding/widgets/onboarding_header.dart';
 import 'package:inventory_tracker/views/onboarding/widgets/location_badge.dart';
-import 'package:inventory_tracker/views/onboarding/widgets/suggestion_chip.dart';
+import 'package:inventory_tracker/core/widgets/suggestion_chip.dart';
 import 'package:inventory_tracker/views/onboarding/widgets/room_counter_card.dart';
 
 class RoomCreationScreen extends StatefulWidget {

@@ -5,9 +5,8 @@ import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
 import 'package:inventory_tracker/models/container_model.dart';
 import 'package:inventory_tracker/models/item_model.dart';
-
 import '../room_detail_screen/room_detail_screen.dart';
-import '../containerItem/detail/container_item_detail_screen.dart';
+import '../containerItem_detail/container_item_detail_screen.dart';
 import '../location_detail_list/location_detail_list_screen.dart';
 import 'widgets/filter_segment_control.dart';
 import 'widgets/home_search_bar.dart';

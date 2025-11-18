@@ -5,7 +5,7 @@ import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:inventory_tracker/views/room_detail_screen/room_detail_screen.dart';
 import 'widgets/location_section_header.dart';
 import 'widgets/location_room_card.dart';
-import 'package:inventory_tracker/views/shared/empty_state.dart';
+import 'package:inventory_tracker/core/widgets/empty_state.dart';
 
 class LocationDetailListScreen extends StatefulWidget {
   final String? location;

@@ -7,11 +7,11 @@ import 'package:inventory_tracker/models/item_model.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'widgets/moving_item_info_card.dart';
 import 'widgets/destination_info_card.dart';
-import 'package:inventory_tracker/views/roomScreens/widgets/room_list_item.dart';
-import 'package:inventory_tracker/views/roomScreens/widgets/container_list_item.dart';
+import 'package:inventory_tracker/core/widgets/list_items/room_list_item.dart';
+import 'package:inventory_tracker/core/widgets/list_items/container_list_item.dart';
 import 'package:inventory_tracker/views/roomScreens/widgets/direct_room_option.dart';
-import 'package:inventory_tracker/views/locationScreens/widgets/location_search_bar.dart';
-import 'package:inventory_tracker/views/shared/empty_state.dart';
+import 'package:inventory_tracker/core/widgets/universal_search_bar.dart';
+import 'package:inventory_tracker/core/widgets/empty_state.dart';
 
 class MoveItemScreen extends StatefulWidget {
   final Item item;
@@ -170,7 +170,7 @@ class _MoveItemScreenState extends State<MoveItemScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        LocationSearchBar(
+        UniversalSearchBar(
           controller: _searchController,
           hintText: 'Search rooms...',
           onChanged: (value) {

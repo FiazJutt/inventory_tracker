@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
-import 'widgets/location_search_bar.dart';
+import '../../core/widgets/universal_search_bar.dart';
 import 'widgets/location_list_item.dart';
-import 'package:inventory_tracker/views/shared/empty_state.dart';
+import 'package:inventory_tracker/core/widgets/empty_state.dart';
 
 class LocationSelectionScreen extends StatefulWidget {
   const LocationSelectionScreen({super.key});
@@ -70,7 +70,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
             ),
           ),
 
-        LocationSearchBar(
+          UniversalSearchBar(
           controller: _searchController,
           hintText: 'Search locations...',
           onChanged: (value) {

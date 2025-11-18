@@ -6,11 +6,11 @@ import 'package:inventory_tracker/models/container_model.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 
 import '../containerItem/container_item_form_page.dart';
-import 'widgets/room_list_item.dart';
-import 'widgets/container_list_item.dart';
+import '../../core/widgets/list_items/room_list_item.dart';
+import '../../core/widgets/list_items/container_list_item.dart';
 import 'widgets/direct_room_option.dart';
-import 'package:inventory_tracker/views/locationScreens/widgets/location_search_bar.dart';
-import 'package:inventory_tracker/views/shared/empty_state.dart';
+import 'package:inventory_tracker/core/widgets/universal_search_bar.dart';
+import 'package:inventory_tracker/core/widgets/empty_state.dart';
 
 class RoomSelectionScreen extends StatefulWidget {
   final bool isAddItemScreen;
@@ -139,8 +139,8 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
             ],
           ),
         ),
-        
-        LocationSearchBar(
+
+        UniversalSearchBar(
           controller: _searchController,
           hintText: 'Search rooms...',
           onChanged: (value) {

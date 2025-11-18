@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory_tracker/core/theme/app_colors.dart';
 import 'package:inventory_tracker/views/onboarding/onboarding_screen_2.dart';
 import 'widgets/onboarding_header.dart';
-import 'widgets/suggestion_chip.dart';
+import '../../core/widgets/suggestion_chip.dart';
 
 class OnboardingScreen1 extends StatefulWidget {
   const OnboardingScreen1({super.key});

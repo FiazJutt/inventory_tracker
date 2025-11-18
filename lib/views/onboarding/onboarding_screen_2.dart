@@ -6,7 +6,7 @@ import 'package:inventory_tracker/viewmodels/inventory_provider.dart';
 import 'package:inventory_tracker/models/room_model.dart';
 import 'widgets/onboarding_header.dart';
 import 'widgets/location_badge.dart';
-import 'widgets/suggestion_chip.dart';
+import '../../core/widgets/suggestion_chip.dart';
 import 'widgets/room_counter_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
